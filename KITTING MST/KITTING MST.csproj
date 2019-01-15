@@ -45,7 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStructure\CurrentOrder.cs" />
     <Compile Include="DataStructure\LedReelsStruct.cs" />
+    <Compile Include="dgvTools.cs" />
     <Compile Include="Forms\AddLedReel.cs">
       <SubType>Form</SubType>
     </Compile>

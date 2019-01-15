@@ -10,42 +10,57 @@ namespace KITTING_MST
 {
     class LedReels
     {
-        public static void AddLedReelsForLot(string lot, DataGridView grid)
+        public static void AddLedReelsForLot(string lot, DataGridView grid, ref Dictionary<string, string> currentBins)
         {
             DataTable sqlTable = MST.MES.SqlOperations.SparingLedInfo.GetReelsForLot(lot);
             List<string> checkList = new List<string>();
 
             if (sqlTable.Rows.Count > 0)
             {
-                grid.Rows.Clear();
                 foreach (DataRow row in sqlTable.Rows)
                 {
                     string nc12 = row["NC12"].ToString();
                     string id = row["ID"].ToString();
                     if (checkList.Contains(nc12 + id)) continue;
-                    AddReelToGrid(nc12, id, grid);
+                    string qty = row["Ilosc"].ToString();
+                    string bin = row["Tara"].ToString();
+
+                    if (!currentBins.ContainsKey(bin))
+                    {
+                        currentBins.Add(bin, nc12);
+                    }
+
+                    AddReelToGrid(nc12, id, grid, ref currentBins);
                     checkList.Add(nc12 + id);
                 }
             }
         }
 
-        public static void AddReelToGrid(string nc12, string id, DataGridView grid)
+        public static void AddReelToGrid(string nc12, string id, DataGridView grid, ref Dictionary<string, string> currentBins)
         {
             DataTable reelTable = MST.MES.SqlOperations.SparingLedInfo.GetInfoFor12NC_ID(nc12, id);
-            HashSet<string> lotNumbers = new HashSet<string>();
-            foreach (DataRow row in reelTable.Rows)
-            {
-                if (row["ZlecenieString"].ToString() == "" || row["ZlecenieString"].ToString() == "NULL") continue;
-                lotNumbers.Add(row["ZlecenieString"].ToString());
-            }
-
             string qty = reelTable.Rows[0]["Ilosc"].ToString();
-            if (lotNumbers.Count>1)
+            string binId = reelTable.Rows[0]["Tara"].ToString();
+            if (!currentBins.ContainsKey(binId))
             {
-                qty = "(" + qty + @") /" + lotNumbers.Count;
+                currentBins.Add(binId, nc12);
             }
 
-            grid.Rows.Add(nc12, id, qty);
+
+            int binRow = 0;
+            for (int r = 0; r < grid.Rows.Count; r++)
+            {
+                if (grid.Rows[r].Cells[0].Value == null) continue;
+                if (grid.Rows[r].Cells[0].Value.ToString() == binId)
+                {
+                    binRow = r;
+                    break;
+                }
+            }
+
+            grid.Rows.Insert(binRow + 1, nc12, id, qty);
+
+            dgvTools.SumUpLedsInBins(grid);
 
             foreach (DataGridViewColumn col in grid.Columns)
             {
