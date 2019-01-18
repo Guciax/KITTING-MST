@@ -59,7 +59,7 @@ namespace KITTING_MST
             }
 
             grid.Rows.Insert(binRow + 1, nc12, id, qty);
-
+            
             dgvTools.SumUpLedsInBins(grid);
 
             foreach (DataGridViewColumn col in grid.Columns)

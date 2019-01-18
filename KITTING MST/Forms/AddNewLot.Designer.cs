@@ -48,6 +48,8 @@
             this.numericPcbPerMb = new System.Windows.Forms.NumericUpDown();
             this.label10 = new System.Windows.Forms.Label();
             this.labelMesInfo = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.labelValuesChanged = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericBinQty)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericLedsPerModel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericConnQty)).BeginInit();
@@ -111,9 +113,10 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(252, 265);
+            this.button1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.button1.Location = new System.Drawing.Point(0, 334);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(82, 31);
+            this.button1.Size = new System.Drawing.Size(336, 31);
             this.button1.TabIndex = 7;
             this.button1.Text = "Zapisz";
             this.button1.UseVisualStyleBackColor = true;
@@ -159,9 +162,9 @@
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(12, 143);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(253, 13);
+            this.label6.Size = new System.Drawing.Size(313, 13);
             this.label6.TabIndex = 11;
-            this.label6.Text = "_________________________________________";
+            this.label6.Text = "___________________________________________________";
             // 
             // label7
             // 
@@ -201,6 +204,7 @@
             this.numericLedsPerModel.Name = "numericLedsPerModel";
             this.numericLedsPerModel.Size = new System.Drawing.Size(48, 20);
             this.numericLedsPerModel.TabIndex = 16;
+            this.numericLedsPerModel.ValueChanged += new System.EventHandler(this.numericLedsPerModel_ValueChanged);
             // 
             // numericConnQty
             // 
@@ -213,6 +217,7 @@
             this.numericConnQty.Name = "numericConnQty";
             this.numericConnQty.Size = new System.Drawing.Size(48, 20);
             this.numericConnQty.TabIndex = 17;
+            this.numericConnQty.ValueChanged += new System.EventHandler(this.numericLedsPerModel_ValueChanged);
             // 
             // numericResQty
             // 
@@ -225,6 +230,7 @@
             this.numericResQty.Name = "numericResQty";
             this.numericResQty.Size = new System.Drawing.Size(48, 20);
             this.numericResQty.TabIndex = 18;
+            this.numericResQty.ValueChanged += new System.EventHandler(this.numericLedsPerModel_ValueChanged);
             // 
             // numericPcbPerMb
             // 
@@ -237,6 +243,7 @@
             this.numericPcbPerMb.Name = "numericPcbPerMb";
             this.numericPcbPerMb.Size = new System.Drawing.Size(48, 20);
             this.numericPcbPerMb.TabIndex = 19;
+            this.numericPcbPerMb.ValueChanged += new System.EventHandler(this.numericLedsPerModel_ValueChanged);
             // 
             // label10
             // 
@@ -258,11 +265,32 @@
             this.labelMesInfo.TabIndex = 21;
             this.labelMesInfo.Text = "...";
             // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(11, 313);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(313, 13);
+            this.label11.TabIndex = 22;
+            this.label11.Text = "___________________________________________________";
+            // 
+            // labelValuesChanged
+            // 
+            this.labelValuesChanged.AutoSize = true;
+            this.labelValuesChanged.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelValuesChanged.Location = new System.Drawing.Point(12, 303);
+            this.labelValuesChanged.Name = "labelValuesChanged";
+            this.labelValuesChanged.Size = new System.Drawing.Size(183, 13);
+            this.labelValuesChanged.TabIndex = 23;
+            this.labelValuesChanged.Text = "Zmienione wartości zostaną zapisane";
+            this.labelValuesChanged.Visible = false;
+            // 
             // AddNewLot
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(337, 301);
+            this.ClientSize = new System.Drawing.Size(336, 365);
+            this.Controls.Add(this.labelValuesChanged);
             this.Controls.Add(this.labelMesInfo);
             this.Controls.Add(this.numericPcbPerMb);
             this.Controls.Add(this.numericResQty);
@@ -283,6 +311,7 @@
             this.Controls.Add(this.labelLotNo);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label10);
+            this.Controls.Add(this.label11);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "AddNewLot";
             this.Text = "Dodaj nowe zlecenie";
@@ -319,5 +348,7 @@
         private System.Windows.Forms.NumericUpDown numericPcbPerMb;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label labelMesInfo;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label labelValuesChanged;
     }
 }

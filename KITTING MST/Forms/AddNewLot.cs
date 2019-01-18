@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KITTING_MST.DataStructure;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -21,6 +22,8 @@ namespace KITTING_MST.Forms
         public int resQty = 0;
         public int pcbPerMb = 0;
         bool newModel = false;
+        bool modelValuesChanged = false;
+
 
 
         public AddNewLot(string lotNo)
@@ -48,6 +51,7 @@ namespace KITTING_MST.Forms
                 newModel = false;
                 labelMesInfo.Text = "Model znajduje się w bazie, sprawdź poprawność danych";
                 labelMesInfo.ForeColor = Color.Black;
+                labelValuesChanged.Visible = false;
             }
             else
             {
@@ -80,6 +84,12 @@ namespace KITTING_MST.Forms
                 {
                     MST.MES.SqlOperations.MesModels.InsertNewMstModel(model, ledPerModel, pcbPerMb, connQty, resQty);
                 }
+
+                if (modelValuesChanged)
+                {
+                    MST.MES.SqlOperations.MesModels.UpdateMstModel(model, ledPerModel, pcbPerMb, connQty, resQty);
+                }
+
                 this.DialogResult = DialogResult.OK;
             }
         }
@@ -132,6 +142,15 @@ namespace KITTING_MST.Forms
             if (e.KeyCode == Keys.Return)
             {
                 TryLoadModel();
+            }
+        }
+
+        private void numericLedsPerModel_ValueChanged(object sender, EventArgs e)
+        {
+            if (!newModel)
+            {
+                modelValuesChanged = true;
+                labelValuesChanged.Visible = true;
             }
         }
     }

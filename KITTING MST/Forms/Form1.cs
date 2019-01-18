@@ -24,10 +24,10 @@ namespace KITTING_MST
 
         private void Form1_Load(object sender, EventArgs e)
         {
-#if DEBUG
+            #if DEBUG
             //button2.Visible = true;
             release = false;
-#endif
+            #endif
             dataGridViewLedReels.RowsDefaultCellStyle.SelectionBackColor = System.Drawing.Color.Transparent;
         }
 
