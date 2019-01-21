@@ -46,53 +46,57 @@ namespace KITTING_MST
 
         private void textBoxLotNumber_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Return)
+            if (textBoxLotNumber.Text.Length > 5)
             {
-                currentOrder = new CurrentOrder("", DateTime.Now, 0, 0, "", "", 0, 0, 0);
-                DataTable lotTable = MST.MES.SqlOperations.Kitting.GetKittingTableForLots(new string[] { textBoxLotNumber.Text });
-                Int32 nc12FormatCheck = 0;
-                if (lotTable.Rows.Count > 0)
+                if (e.KeyCode == Keys.Return)
                 {
-                    if (Int32.TryParse(lotTable.Rows[0]["NC12_wyrobu"].ToString(), out nc12FormatCheck))
+                    currentOrder = new CurrentOrder("", DateTime.Now, 0, 0, "", "", 0, 0, 0);
+                    DataTable lotTable = MST.MES.SqlOperations.Kitting.GetKittingTableForLots(new string[] { textBoxLotNumber.Text });
+                    Int32 nc12FormatCheck = 0;
+                    if (lotTable.Rows.Count > 0)
                     {
-                        //load LOT
-                        currentOrder.LotNumber = textBoxLotNumber.Text;
-                        currentOrder.ModelNc10 = lotTable.Rows[0]["NC12_wyrobu"].ToString();
-                        string modelName = MST.MES.SqlOperations.ConnectDB.NC12ToModelName(currentOrder.ModelNc10 + "00");
-                        currentOrder.OrderedQty = Int32.Parse(lotTable.Rows[0]["Ilosc_wyrobu_zlecona"].ToString());
-                        currentOrder.StartDate = DateTime.Parse(lotTable.Rows[0]["Data_Poczatku_Zlecenia"].ToString());
-                        currentOrder.LedsPerModel = int.Parse(lotTable.Rows[0]["IloscDiodNaWyrob"].ToString());
-                        currentOrder.BinQty = int.Parse(lotTable.Rows[0]["IloscKIT"].ToString());
-                        currentOrder.ModelName = modelName;
-
-                        textBoxLotNumber.Text = "";
-                    }
-                    else { MessageBox.Show("To nie jest zlecenie MST, model: " + lotTable.Rows[0]["NC12_wyrobu"].ToString()); }
-                }
-                else
-                {
-                    //new LOT
-                    using (AddNewLot lotForm = new AddNewLot(textBoxLotNumber.Text))
-                    {
-                        if (lotForm.ShowDialog() == DialogResult.OK)
+                        if (Int32.TryParse(lotTable.Rows[0]["NC12_wyrobu"].ToString(), out nc12FormatCheck))
                         {
+                            //load LOT
                             currentOrder.LotNumber = textBoxLotNumber.Text;
-                            currentOrder.ModelNc10 = lotForm.model;
-                            currentOrder.OrderedQty = lotForm.orderedQty;
-                            currentOrder.StartDate = DateTime.Now;
-                            currentOrder.LedsPerModel = lotForm.ledPerModel;
-                            currentOrder.BinQty = lotForm.binQty;
-                            currentOrder.ModelName = lotForm.modelName;
+                            currentOrder.ModelNc10 = lotTable.Rows[0]["NC12_wyrobu"].ToString();
+                            string modelName = MST.MES.SqlOperations.ConnectDB.NC12ToModelName(currentOrder.ModelNc10 + "00");
+                            currentOrder.OrderedQty = Int32.Parse(lotTable.Rows[0]["Ilosc_wyrobu_zlecona"].ToString());
+                            currentOrder.StartDate = DateTime.Parse(lotTable.Rows[0]["Data_Poczatku_Zlecenia"].ToString());
+                            currentOrder.LedsPerModel = int.Parse(lotTable.Rows[0]["IloscDiodNaWyrob"].ToString());
+                            currentOrder.BinQty = int.Parse(lotTable.Rows[0]["IloscKIT"].ToString());
+                            currentOrder.ModelName = modelName;
 
-                            MST.MES.SqlOperations.Kitting.InsertMstOrder(currentOrder.LotNumber, currentOrder.ModelNc10, currentOrder.OrderedQty, currentOrder.StartDate, currentOrder.BinQty, currentOrder.LedsPerModel);
+                            textBoxLotNumber.Text = "";
+                        }
+                        else { MessageBox.Show("To nie jest zlecenie MST, model: " + lotTable.Rows[0]["NC12_wyrobu"].ToString()); }
+                    }
+                    else
+                    {
+                        //new LOT
+                        using (AddNewLot lotForm = new AddNewLot(textBoxLotNumber.Text))
+                        {
+                            if (lotForm.ShowDialog() == DialogResult.OK)
+                            {
+                                currentOrder.LotNumber = textBoxLotNumber.Text;
+                                currentOrder.ModelNc10 = lotForm.model;
+                                currentOrder.OrderedQty = lotForm.orderedQty;
+                                currentOrder.StartDate = DateTime.Now;
+                                currentOrder.LedsPerModel = lotForm.ledPerModel;
+                                currentOrder.BinQty = lotForm.binQty;
+                                currentOrder.ModelName = lotForm.modelName;
+
+                                MST.MES.SqlOperations.Kitting.InsertMstOrder(currentOrder.LotNumber, currentOrder.ModelNc10, currentOrder.OrderedQty, currentOrder.StartDate, currentOrder.BinQty, currentOrder.LedsPerModel);
+                            }
                         }
                     }
+
+                    UpdateLabels();
+                    currentBins = new Dictionary<string, string>();
+                    dgvTools.PrepareDgvForBins(dataGridViewLedReels, currentOrder.BinQty);
+                    LedReels.AddLedReelsForLot(currentOrder.LotNumber, dataGridViewLedReels, ref currentBins);
+                    textBoxLotNumber.Text = "";
                 }
-                UpdateLabels();
-                currentBins = new Dictionary<string, string>();
-                dgvTools.PrepareDgvForBins(dataGridViewLedReels, currentOrder.BinQty);
-                LedReels.AddLedReelsForLot(currentOrder.LotNumber, dataGridViewLedReels,ref currentBins);
-                textBoxLotNumber.Text = "";
             }
         }
 
