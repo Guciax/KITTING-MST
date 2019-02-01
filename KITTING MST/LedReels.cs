@@ -22,6 +22,10 @@ namespace KITTING_MST
                     string nc12 = row["NC12"].ToString();
                     string id = row["ID"].ToString();
                     if (checkList.Contains(nc12 + id)) continue;
+
+                    var reelTable = MST.MES.SqlOperations.SparingLedInfo.GetInfoFor12NC_ID(nc12, id);
+                    string aktZlecenie = reelTable.Rows[0]["ZlecenieString"].ToString();
+
                     string qty = row["Ilosc"].ToString();
                     string bin = row["Tara"].ToString();
 
@@ -30,13 +34,13 @@ namespace KITTING_MST
                         currentBins.Add(bin, nc12);
                     }
 
-                    AddReelToGrid(nc12, id, grid, ref currentBins);
+                    AddReelToGrid(nc12, id, aktZlecenie, grid, ref currentBins);
                     checkList.Add(nc12 + id);
                 }
             }
         }
 
-        public static void AddReelToGrid(string nc12, string id, DataGridView grid, ref Dictionary<string, string> currentBins)
+        public static void AddReelToGrid(string nc12, string id, string aktZlecenie, DataGridView grid, ref Dictionary<string, string> currentBins)
         {
             DataTable reelTable = MST.MES.SqlOperations.SparingLedInfo.GetInfoFor12NC_ID(nc12, id);
             string qty = reelTable.Rows[0]["Ilosc"].ToString();
@@ -58,7 +62,7 @@ namespace KITTING_MST
                 }
             }
 
-            grid.Rows.Insert(binRow + 1, nc12, id, qty);
+            grid.Rows.Insert(binRow + 1, nc12, id, qty, aktZlecenie);
             
             dgvTools.SumUpLedsInBins(grid);
 

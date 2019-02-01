@@ -91,10 +91,14 @@ namespace KITTING_MST
                         }
                     }
 
-                    UpdateLabels();
-                    currentBins = new Dictionary<string, string>();
-                    dgvTools.PrepareDgvForBins(dataGridViewLedReels, currentOrder.BinQty);
-                    LedReels.AddLedReelsForLot(currentOrder.LotNumber, dataGridViewLedReels, ref currentBins);
+                    if (!string.IsNullOrEmpty(currentOrder.LotNumber))
+                    {
+                        UpdateLabels();
+                        currentBins = new Dictionary<string, string>();
+                        dgvTools.PrepareDgvForBins(dataGridViewLedReels, currentOrder.BinQty);
+                        LedReels.AddLedReelsForLot(currentOrder.LotNumber, dataGridViewLedReels, ref currentBins);
+                        buttonChangeQty.Visible = true;
+                    }
                     textBoxLotNumber.Text = "";
                 }
             }
@@ -125,7 +129,7 @@ namespace KITTING_MST
                                 MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(ledForm.nc12, ledForm.id, currentOrder.LotNumber, ledForm.binId);
                             }
 
-                            LedReels.AddReelToGrid(ledForm.nc12, ledForm.id, dataGridViewLedReels, ref currentBins);
+                            LedReels.AddReelToGrid(ledForm.nc12, ledForm.id, currentOrder.LotNumber, dataGridViewLedReels, ref currentBins);
                         }
                         else
                         {
@@ -167,6 +171,64 @@ namespace KITTING_MST
         private void dataGridViewLedReels_SelectionChanged(object sender, EventArgs e)
         {
             dataGridViewLedReels.ClearSelection();
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            LotsHistory historyForm = new LotsHistory();
+            historyForm.Show();
+        }
+
+        private void dataGridViewLedReels_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex>-1 & e.ColumnIndex>-1)
+            {
+                if (e.ColumnIndex == 4)
+                {
+                    if (dataGridViewLedReels.Rows[e.RowIndex].Cells[3].Value != null)
+                    {
+                        string bin = "";
+                        for (int r = e.RowIndex; r >= 0; r--)
+                        {
+                            if (dataGridViewLedReels.Rows[r].Cells[1].Value.ToString().Contains("BIN"))
+                            {
+                                bin = dataGridViewLedReels.Rows[r].Cells[1].Value.ToString().Replace("BIN", "").Trim();
+                                break;
+                            }
+                        }
+                        string aktZlec = dataGridViewLedReels.Rows[e.RowIndex].Cells[3].Value.ToString();
+                        string nc12 = dataGridViewLedReels.Rows[e.RowIndex].Cells[0].Value.ToString();
+                        string id = dataGridViewLedReels.Rows[e.RowIndex].Cells[1].Value.ToString();
+
+                        using (EditLedReel editForm = new EditLedReel(currentOrder.LotNumber, bin, currentOrder.BinQty))
+                        {
+                            if (editForm.ShowDialog()== DialogResult.OK)
+                            {
+                                MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(nc12, id, editForm.newOrder, editForm.newBin);
+
+                                currentBins = new Dictionary<string, string>();
+                                dgvTools.PrepareDgvForBins(dataGridViewLedReels, currentOrder.BinQty);
+                                LedReels.AddLedReelsForLot(currentOrder.LotNumber, dataGridViewLedReels, ref currentBins);
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            using (ChangeOrderQty changeQForm = new ChangeOrderQty(currentOrder.OrderedQty))
+            {
+                if (changeQForm.ShowDialog() == DialogResult.OK)
+                {
+                    currentOrder.OrderedQty = changeQForm.newQty;
+                    
+                    MST.MES.SqlOperations.Kitting.UpdateOrderQty(currentOrder.LotNumber, currentOrder.OrderedQty);
+                    UpdateLabels();
+                }
+            }
         }
     }
 }

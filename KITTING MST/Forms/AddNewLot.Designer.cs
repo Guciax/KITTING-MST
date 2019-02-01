@@ -60,16 +60,17 @@
             // labelLotNo
             // 
             this.labelLotNo.AutoSize = true;
-            this.labelLotNo.Location = new System.Drawing.Point(12, 5);
+            this.labelLotNo.Font = new System.Drawing.Font("Microsoft Sans Serif", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.labelLotNo.Location = new System.Drawing.Point(10, 5);
             this.labelLotNo.Name = "labelLotNo";
-            this.labelLotNo.Size = new System.Drawing.Size(86, 13);
+            this.labelLotNo.Size = new System.Drawing.Size(176, 26);
             this.labelLotNo.TabIndex = 0;
             this.labelLotNo.Text = "Numer zlecenia: ";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 31);
+            this.label2.Location = new System.Drawing.Point(12, 42);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(66, 13);
             this.label2.TabIndex = 1;
@@ -77,7 +78,7 @@
             // 
             // textBox12NC
             // 
-            this.textBox12NC.Location = new System.Drawing.Point(81, 28);
+            this.textBox12NC.Location = new System.Drawing.Point(81, 39);
             this.textBox12NC.Name = "textBox12NC";
             this.textBox12NC.Size = new System.Drawing.Size(156, 20);
             this.textBox12NC.TabIndex = 2;
@@ -151,7 +152,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 57);
+            this.label5.Location = new System.Drawing.Point(12, 61);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(43, 13);
             this.label5.TabIndex = 10;
