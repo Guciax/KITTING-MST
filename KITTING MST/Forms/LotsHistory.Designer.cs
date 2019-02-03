@@ -46,9 +46,9 @@
             // button1
             // 
             this.button1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.button1.Location = new System.Drawing.Point(0, 625);
+            this.button1.Location = new System.Drawing.Point(0, 614);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(720, 23);
+            this.button1.Size = new System.Drawing.Size(720, 34);
             this.button1.TabIndex = 0;
             this.button1.Text = "Zamknij";
             this.button1.UseVisualStyleBackColor = true;
@@ -73,7 +73,7 @@
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.ReadOnly = true;
             this.dataGridView1.RowHeadersVisible = false;
-            this.dataGridView1.Size = new System.Drawing.Size(720, 586);
+            this.dataGridView1.Size = new System.Drawing.Size(720, 575);
             this.dataGridView1.TabIndex = 1;
             this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
@@ -135,9 +135,9 @@
             this.checkBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.checkBox1.Location = new System.Drawing.Point(13, 8);
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(219, 24);
+            this.checkBox1.Size = new System.Drawing.Size(153, 24);
             this.checkBox1.TabIndex = 0;
-            this.checkBox1.Text = "Pokaż tylko niezakończone";
+            this.checkBox1.Text = "Ukryj zakończone";
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
@@ -151,7 +151,7 @@
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.button1);
             this.Name = "LotsHistory";
-            this.Text = "LotsHistory";
+            this.Text = "Historia zleceń MST";
             this.Load += new System.EventHandler(this.LotsHistory_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.panel1.ResumeLayout(false);
