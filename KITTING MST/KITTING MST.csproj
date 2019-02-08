@@ -8,8 +8,9 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>KITTING_MST</RootNamespace>
     <AssemblyName>KITTING MST</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -72,6 +73,12 @@
     <Compile Include="Forms\EditLedReel.Designer.cs">
       <DependentUpon>EditLedReel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\EditModel.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\EditModel.Designer.cs">
+      <DependentUpon>EditModel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -99,6 +106,9 @@
     <EmbeddedResource Include="Forms\EditLedReel.resx">
       <DependentUpon>EditLedReel.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\EditModel.resx">
+      <DependentUpon>EditModel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -113,7 +123,9 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

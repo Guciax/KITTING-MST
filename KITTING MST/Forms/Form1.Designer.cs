@@ -61,6 +61,7 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.textBoxLotNumber = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
+            this.button3 = new System.Windows.Forms.Button();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewLedReels)).BeginInit();
@@ -86,6 +87,7 @@
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.panel2.Controls.Add(this.button3);
             this.panel2.Controls.Add(this.buttonChangeQty);
             this.panel2.Controls.Add(this.button2);
             this.panel2.Controls.Add(this.labelRequiredLeds);
@@ -420,6 +422,16 @@
             this.label4.TabIndex = 1;
             this.label4.Text = "Numer zlecenia:";
             // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(249, 543);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(80, 34);
+            this.button3.TabIndex = 24;
+            this.button3.Text = "Edytuj model";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click_1);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -475,6 +487,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.DataGridViewButtonColumn Column2;
         private System.Windows.Forms.Button buttonChangeQty;
+        private System.Windows.Forms.Button button3;
     }
 }
 

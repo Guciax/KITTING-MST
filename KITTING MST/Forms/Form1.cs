@@ -230,5 +230,11 @@ namespace KITTING_MST
                 }
             }
         }
+
+        private void button3_Click_1(object sender, EventArgs e)
+        {
+            EditModel editForm = new EditModel();
+            editForm.Show();
+        }
     }
 }
