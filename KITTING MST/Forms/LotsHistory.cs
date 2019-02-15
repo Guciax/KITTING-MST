@@ -12,13 +12,15 @@ namespace KITTING_MST.Forms
     public partial class LotsHistory : Form
     {
 
-        public LotsHistory()
+        public LotsHistory(bool superUser)
         {
             InitializeComponent();
-
+            this.superUser = superUser;
         }
 
+        
         DataTable sqlTable = new DataTable();
+        private readonly bool superUser;
 
         private void LotsHistory_Load(object sender, EventArgs e)
         {
@@ -32,6 +34,7 @@ namespace KITTING_MST.Forms
 
         private void FillGrid()
         {
+            dataGridView1.Rows.Clear();
             foreach (DataRow row in sqlTable.Rows)
             {
                 if (checkBox1.Checked & row["Data_Konca_Zlecenia"].ToString().Trim() != "") continue;
@@ -52,16 +55,22 @@ namespace KITTING_MST.Forms
 
             if (senderGrid.Columns[e.ColumnIndex] is DataGridViewButtonColumn && e.RowIndex >= 0)
             {
-                string lotNo = senderGrid.Rows[e.RowIndex].Cells[0].Value.ToString();
-                DialogResult dialogResult = MessageBox.Show($"Uwaga zlecenie {lotNo} zostanie usunięte. Tej operacji nie można cofnąc!", "UWAGA", MessageBoxButtons.YesNo);
-                if (dialogResult == DialogResult.Yes)
+                if (superUser)
                 {
-                    if (MST.MES.SqlOperations.Kitting.DeleteOrder(lotNo))
+                    string lotNo = senderGrid.Rows[e.RowIndex].Cells[0].Value.ToString();
+                    DialogResult dialogResult = MessageBox.Show($"Uwaga zlecenie {lotNo} zostanie usunięte. Tej operacji nie można cofnąc!", "UWAGA", MessageBoxButtons.YesNo);
+                    if (dialogResult == DialogResult.Yes)
                     {
-                        dataGridView1.Rows.RemoveAt(e.RowIndex);
+                        if (MST.MES.SqlOperations.Kitting.DeleteOrder(lotNo))
+                        {
+                            dataGridView1.Rows.RemoveAt(e.RowIndex);
+                        }
                     }
                 }
-                
+                else
+                {
+                    MessageBox.Show("Brak uprawnień");
+                }
 
             }
         }

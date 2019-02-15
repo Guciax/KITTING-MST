@@ -17,6 +17,9 @@ namespace KITTING_MST
         Dictionary<string, string> currentBins = new Dictionary<string, string>();
         bool release = true;
 
+        string[] userList = new string[] { "piotr.dabrowski", "wojciech.komor", "katarzyna.kustra", "tomasz.jurkin", "grazyna.fabisiak", "mariola.czernis", "kitting.elektronika" };
+        string currentUser = Environment.UserName;
+
         public Form1()
         {
             InitializeComponent();
@@ -50,6 +53,7 @@ namespace KITTING_MST
             {
                 if (e.KeyCode == Keys.Return)
                 {
+                    
                     currentOrder = new CurrentOrder("", DateTime.Now, 0, 0, "", "", 0, 0, 0);
                     DataTable lotTable = MST.MES.SqlOperations.Kitting.GetKittingTableForLots(new string[] { textBoxLotNumber.Text });
                     Int32 nc12FormatCheck = 0;
@@ -63,9 +67,11 @@ namespace KITTING_MST
                             string modelName = MST.MES.SqlOperations.ConnectDB.NC12ToModelName(currentOrder.ModelNc10 + "00");
                             currentOrder.OrderedQty = Int32.Parse(lotTable.Rows[0]["Ilosc_wyrobu_zlecona"].ToString());
                             currentOrder.StartDate = DateTime.Parse(lotTable.Rows[0]["Data_Poczatku_Zlecenia"].ToString());
-                            currentOrder.LedsPerModel = int.Parse(lotTable.Rows[0]["IloscDiodNaWyrob"].ToString());
                             currentOrder.BinQty = int.Parse(lotTable.Rows[0]["IloscKIT"].ToString());
                             currentOrder.ModelName = modelName;
+
+                            var mesModel = MST.MES.SqlDataReaderMethods.MesModels.mesModel(currentOrder.ModelNc10);
+                            currentOrder.LedsPerModel = mesModel.ledCountPerModel;
 
                             textBoxLotNumber.Text = "";
                         }
@@ -73,21 +79,27 @@ namespace KITTING_MST
                     }
                     else
                     {
-                        //new LOT
-                        using (AddNewLot lotForm = new AddNewLot(textBoxLotNumber.Text))
+                        if (userList.Contains(currentUser))
                         {
-                            if (lotForm.ShowDialog() == DialogResult.OK)
+                            //new LOT
+                            using (AddNewLot lotForm = new AddNewLot(textBoxLotNumber.Text))
                             {
-                                currentOrder.LotNumber = textBoxLotNumber.Text;
-                                currentOrder.ModelNc10 = lotForm.model;
-                                currentOrder.OrderedQty = lotForm.orderedQty;
-                                currentOrder.StartDate = DateTime.Now;
-                                currentOrder.LedsPerModel = lotForm.ledPerModel;
-                                currentOrder.BinQty = lotForm.binQty;
-                                currentOrder.ModelName = lotForm.modelName;
-
-                                MST.MES.SqlOperations.Kitting.InsertMstOrder(currentOrder.LotNumber, currentOrder.ModelNc10, currentOrder.OrderedQty, currentOrder.StartDate, currentOrder.BinQty, currentOrder.LedsPerModel);
+                                if (lotForm.ShowDialog() == DialogResult.OK)
+                                {
+                                    currentOrder.LotNumber = textBoxLotNumber.Text;
+                                    currentOrder.ModelNc10 = lotForm.model;
+                                    currentOrder.OrderedQty = lotForm.orderedQty;
+                                    currentOrder.StartDate = DateTime.Now;
+                                    currentOrder.LedsPerModel = lotForm.ledPerModel;
+                                    currentOrder.BinQty = lotForm.binQty;
+                                    currentOrder.ModelName = lotForm.modelName;
+                                    MST.MES.SqlOperations.Kitting.InsertMstOrder(currentOrder.LotNumber, currentOrder.ModelNc10, currentOrder.OrderedQty, currentOrder.StartDate, currentOrder.BinQty, currentOrder.LedsPerModel);
+                                }
                             }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Brak uprawnień");
                         }
                     }
 
@@ -175,7 +187,7 @@ namespace KITTING_MST
 
         private void button2_Click_1(object sender, EventArgs e)
         {
-            LotsHistory historyForm = new LotsHistory();
+            LotsHistory historyForm = new LotsHistory(userList.Contains(currentUser));
             historyForm.Show();
         }
 
@@ -219,22 +231,31 @@ namespace KITTING_MST
 
         private void button3_Click(object sender, EventArgs e)
         {
-            using (ChangeOrderQty changeQForm = new ChangeOrderQty(currentOrder.OrderedQty))
+            if (userList.Contains(currentUser))
             {
-                if (changeQForm.ShowDialog() == DialogResult.OK)
+                using (ChangeOrderQty changeQForm = new ChangeOrderQty(currentOrder.OrderedQty))
                 {
-                    currentOrder.OrderedQty = changeQForm.newQty;
-                    
-                    MST.MES.SqlOperations.Kitting.UpdateOrderQty(currentOrder.LotNumber, currentOrder.OrderedQty);
-                    UpdateLabels();
+                    if (changeQForm.ShowDialog() == DialogResult.OK)
+                    {
+                        currentOrder.OrderedQty = changeQForm.newQty;
+
+                        MST.MES.SqlOperations.Kitting.UpdateOrderQty(currentOrder.LotNumber, currentOrder.OrderedQty);
+                        UpdateLabels();
+                    }
                 }
             }
+            else MessageBox.Show("Brak uprawnień");
         }
 
         private void button3_Click_1(object sender, EventArgs e)
         {
-            EditModel editForm = new EditModel();
-            editForm.Show();
+            if (userList.Contains(currentUser))
+            {
+                EditModel editForm = new EditModel();
+                editForm.Show();
+            }
+            else { MessageBox.Show("Brak uprawnień"); }
+            
         }
     }
 }
