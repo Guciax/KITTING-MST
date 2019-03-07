@@ -257,5 +257,12 @@ namespace KITTING_MST
             else { MessageBox.Show("Brak uprawnień"); }
             
         }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            var dv = MST.MES.Data_structures.DevTools.DevToolsLoader.LoadDevToolsModels();
+            var m = dv["101011710346"];
+            ;
+        }
     }
 }
