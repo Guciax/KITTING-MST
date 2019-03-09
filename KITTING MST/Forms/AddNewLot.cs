@@ -13,6 +13,7 @@ namespace KITTING_MST.Forms
     public partial class AddNewLot : Form
     {
         private readonly string lotNo;
+        private readonly Dictionary<string, MST.MES.ModelInfo.ModelSpecification> mesModels;
         public string model = "";
         public Int32 orderedQty = 0;
         public int ledPerModel = 0;
@@ -21,43 +22,46 @@ namespace KITTING_MST.Forms
         public int connQty = 0;
         public int resQty = 0;
         public int pcbPerMb = 0;
+        public bool mesModelUpdated = false;
         bool newModel = false;
         bool modelValuesChanged = false;
 
+        public MST.MES.OrderStructureByOrderNo.Kitting newOrder = new MST.MES.OrderStructureByOrderNo.Kitting();
+        public MST.MES.ModelInfo.ModelSpecification mesModel;
 
 
-        public AddNewLot(string lotNo)
+        public AddNewLot(string lotNo, Dictionary<string, MST.MES.ModelInfo.ModelSpecification> mesModels)
         {
             InitializeComponent();
             this.lotNo = lotNo;
+            this.mesModels = mesModels;
         }
 
         private void TryLoadModel()
         {
             string nc10 = textBox12NC.Text.Trim().Replace(" ", "");
-            modelName = MST.MES.SqlOperations.ConnectDB.NC12ToModelName(textBox12NC.Text + "00");
-            DataTable modelInfo = MST.MES.SqlOperations.MesModels.GetMstModelInfo(nc10);//MODEL_ID,PKG_SUM_QTY,SMT_Carrier_QTY,Conn_Qty,Resistor_Qty
-            if (modelInfo.Rows.Count > 0)
+
+            //modelName = MST.MES.SqlOperations.ConnectDB.NC12ToModelName(textBox12NC.Text + "00");
+            //DataTable modelInfo = MST.MES.SqlOperations.MesModels.GetMstModelInfo(nc10);//MODEL_ID,PKG_SUM_QTY,SMT_Carrier_QTY,Conn_Qty,Resistor_Qty
+            if (mesModels.TryGetValue(nc10, out mesModel))
             {
-                ledPerModel = int.Parse(modelInfo.Rows[0]["PKG_SUM_QTY"].ToString());
-                numericLedsPerModel.Value = ledPerModel;
-                pcbPerMb = int.Parse(modelInfo.Rows[0]["SMT_Carrier_QTY"].ToString());
-                numericPcbPerMb.Value = pcbPerMb;
-                connQty = int.Parse(modelInfo.Rows[0]["Conn_Qty"].ToString());
-                numericConnQty.Value = connQty;
-                resQty = int.Parse(modelInfo.Rows[0]["Resistor_Qty"].ToString());
-                numericResQty.Value = resQty;
+                numericLedsPerModel.Value = mesModel.ledCountPerModel;
+                numericPcbPerMb.Value = mesModel.pcbCountPerMB;
+                numericConnQty.Value = mesModel.connectorCountPerModel;
+                numericResQty.Value = mesModel.resistorCountPerModel;
 
                 newModel = false;
                 labelMesInfo.Text = "Model znajduje się w bazie, sprawdź poprawność danych";
                 labelMesInfo.ForeColor = Color.Black;
                 labelValuesChanged.Visible = false;
+                modelName = mesModel.modelName;
             }
             else
             {
                 newModel = true;
-                labelMesInfo.Text = "Brak modelu w bazie, wprowadź dane poniżej";
+                labelMesInfo.Text = "Brak modelu w bazie, uzupełnij dane poniżej";
                 labelMesInfo.ForeColor = Color.Red;
+                modelName = MST.MES.SqlOperations.ConnectDB.NC12ToModelName(nc10 + "00");
             }
 
             label5.Text = "Nazwa: " + modelName;
@@ -72,23 +76,32 @@ namespace KITTING_MST.Forms
         {
             if (CheckForm())
             {
-                model = textBox12NC.Text;
-                orderedQty = Int32.Parse(textBoxOrderedQty.Text);
-                ledPerModel = (int)numericLedsPerModel.Value;
-                binQty = (int)numericBinQty.Value;
-                pcbPerMb = (int)numericPcbPerMb.Value;
-                connQty = (int)numericConnQty.Value;
-                resQty = (int)numericResQty.Value;
-
                 if (newModel)
                 {
-                    MST.MES.SqlOperations.MesModels.InsertNewMstModel(model, ledPerModel, pcbPerMb, connQty, resQty);
+                    MST.MES.SqlOperations.MesModels.InsertNewMstModel(textBox12NC.Text, 
+                                                                    (int)numericLedsPerModel.Value,
+                                                                    (int)numericPcbPerMb.Value,
+                                                                    (int)numericConnQty.Value,
+                                                                    (int)numericResQty.Value);
+                    mesModelUpdated = true;
                 }
 
                 if (modelValuesChanged)
                 {
-                    MST.MES.SqlOperations.MesModels.UpdateMstModel(model, ledPerModel, pcbPerMb, connQty, resQty);
+                    MST.MES.SqlOperations.MesModels.UpdateMstModel(textBox12NC.Text,
+                                                                    (int)numericLedsPerModel.Value,
+                                                                    (int)numericPcbPerMb.Value,
+                                                                    (int)numericConnQty.Value,
+                                                                    (int)numericResQty.Value);
+                    mesModelUpdated = true;
                 }
+
+                MST.MES.SqlOperations.Kitting.InsertMstOrder(lotNo,
+                                                             textBox12NC.Text, 
+                                                             int.Parse(textBoxOrderedQty.Text), 
+                                                             DateTime.Now, 
+                                                             (int)numericBinQty.Value,
+                                                             (int)numericLedsPerModel.Value);
 
                 this.DialogResult = DialogResult.OK;
             }
@@ -104,6 +117,11 @@ namespace KITTING_MST.Forms
             if (textBoxOrderedQty.Text=="" || numericBinQty.Value==0 || numericLedsPerModel.Value == 0 || numericPcbPerMb.Value == 0)
             {
                 MessageBox.Show("Uzupełnij dane.");
+                return false;
+            }
+            if (numericBinQty.Value < 1)
+            {
+                MessageBox.Show("Nieprawidłowa ilość BIN.");
                 return false;
             }
 

@@ -1,9 +1,11 @@
 ﻿using KITTING_MST.DataStructure;
 using KITTING_MST.Forms;
+using KITTING_MST.Karty_technologiczne;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -13,8 +15,15 @@ namespace KITTING_MST
 {
     public partial class Form1 : Form
     {
-        CurrentOrder currentOrder = new CurrentOrder("", DateTime.Now, 0, 0, "", "", 0, 0, 0);
+        MST.MES.OrderStructureByOrderNo.Kitting currentOrder = new MST.MES.OrderStructureByOrderNo.Kitting();
+
+        ///<summary>
+        ///BIN letter => LED 12NC
+        ///</summary>
         Dictionary<string, string> currentBins = new Dictionary<string, string>();
+        Dictionary<string, MST.MES.ModelInfo.ModelSpecification> mesModels;
+        Dictionary<string, string> nc12ToName;
+
         bool release = true;
 
         string[] userList = new string[] { "piotr.dabrowski", "wojciech.komor", "katarzyna.kustra", "tomasz.jurkin", "grazyna.fabisiak", "mariola.czernis", "kitting.elektronika" };
@@ -32,19 +41,22 @@ namespace KITTING_MST
             release = false;
             #endif
             dataGridViewLedReels.RowsDefaultCellStyle.SelectionBackColor = System.Drawing.Color.Transparent;
+            mesModels = MST.MES.SqlDataReaderMethods.MesModels.allModels();
+            nc12ToName = MST.MES.SqlOperations.ConnectDB.Nc12ToModelFullDict();
         }
 
         private void UpdateLabels()
         {
-            labelLotNumber.Text = currentOrder.LotNumber;
-            label12NC.Text = currentOrder.ModelNc10;
-            labelOrderedQty.Text = currentOrder.OrderedQty.ToString();
-            labelStartDate.Text = currentOrder.StartDate.ToShortDateString();
-            labelLedsPerModel.Text = currentOrder.LedsPerModel.ToString();
-            labelBinQty.Text = currentOrder.BinQty.ToString();
+            labelLotNumber.Text = currentOrder.orderNo;
+            label12NC.Text = currentOrder.modelId_12NCFormat;
+            labelOrderedQty.Text = currentOrder.orderedQty.ToString();
+            labelStartDate.Text = currentOrder.kittingDate.ToShortDateString();
+            
+            labelBinQty.Text = currentOrder.numberOfBins.ToString();
             labelModelName.Text = currentOrder.ModelName;
 
-            labelRequiredLeds.Text = (currentOrder.OrderedQty * currentOrder.LedsPerModel).ToString();
+            labelRequiredLeds.Text = (currentOrder.orderedQty * mesModels[currentOrder.modelId].ledCountPerModel).ToString();
+            labelLedsPerModel.Text = mesModels[currentOrder.modelId].ledCountPerModel.ToString();
         }
 
         private void textBoxLotNumber_KeyDown(object sender, KeyEventArgs e)
@@ -53,62 +65,28 @@ namespace KITTING_MST
             {
                 if (e.KeyCode == Keys.Return)
                 {
-                    
-                    currentOrder = new CurrentOrder("", DateTime.Now, 0, 0, "", "", 0, 0, 0);
-                    DataTable lotTable = MST.MES.SqlOperations.Kitting.GetKittingTableForLots(new string[] { textBoxLotNumber.Text });
-                    Int32 nc12FormatCheck = 0;
-                    if (lotTable.Rows.Count > 0)
-                    {
-                        if (Int32.TryParse(lotTable.Rows[0]["NC12_wyrobu"].ToString(), out nc12FormatCheck))
-                        {
-                            //load LOT
-                            currentOrder.LotNumber = textBoxLotNumber.Text;
-                            currentOrder.ModelNc10 = lotTable.Rows[0]["NC12_wyrobu"].ToString();
-                            string modelName = MST.MES.SqlOperations.ConnectDB.NC12ToModelName(currentOrder.ModelNc10 + "00");
-                            currentOrder.OrderedQty = Int32.Parse(lotTable.Rows[0]["Ilosc_wyrobu_zlecona"].ToString());
-                            currentOrder.StartDate = DateTime.Parse(lotTable.Rows[0]["Data_Poczatku_Zlecenia"].ToString());
-                            currentOrder.BinQty = int.Parse(lotTable.Rows[0]["IloscKIT"].ToString());
-                            currentOrder.ModelName = modelName;
+                    currentOrder = MST.MES.SqlDataReaderMethods.Kitting.GetOneOrderByDataReader(textBoxLotNumber.Text);
 
-                            var mesModel = MST.MES.SqlDataReaderMethods.MesModels.mesModel(currentOrder.ModelNc10);
-                            currentOrder.LedsPerModel = mesModel.ledCountPerModel;
-
-                            textBoxLotNumber.Text = "";
-                        }
-                        else { MessageBox.Show("To nie jest zlecenie MST, model: " + lotTable.Rows[0]["NC12_wyrobu"].ToString()); }
-                    }
-                    else
+                    if (currentOrder.orderNo == "")
                     {
-                        if (userList.Contains(currentUser))
+                        //new order
+                        using (AddNewLot lotForm = new AddNewLot(textBoxLotNumber.Text, mesModels))
                         {
-                            //new LOT
-                            using (AddNewLot lotForm = new AddNewLot(textBoxLotNumber.Text))
+                            if (lotForm.ShowDialog() == DialogResult.OK)
                             {
-                                if (lotForm.ShowDialog() == DialogResult.OK)
-                                {
-                                    currentOrder.LotNumber = textBoxLotNumber.Text;
-                                    currentOrder.ModelNc10 = lotForm.model;
-                                    currentOrder.OrderedQty = lotForm.orderedQty;
-                                    currentOrder.StartDate = DateTime.Now;
-                                    currentOrder.LedsPerModel = lotForm.ledPerModel;
-                                    currentOrder.BinQty = lotForm.binQty;
-                                    currentOrder.ModelName = lotForm.modelName;
-                                    MST.MES.SqlOperations.Kitting.InsertMstOrder(currentOrder.LotNumber, currentOrder.ModelNc10, currentOrder.OrderedQty, currentOrder.StartDate, currentOrder.BinQty, currentOrder.LedsPerModel);
-                                }
+                                currentOrder = MST.MES.SqlDataReaderMethods.Kitting.GetOneOrderByDataReader(textBoxLotNumber.Text);
                             }
                         }
-                        else
-                        {
-                            MessageBox.Show("Brak uprawnień");
-                        }
                     }
 
-                    if (!string.IsNullOrEmpty(currentOrder.LotNumber))
+                    textBoxLotNumber.Text = "";
+
+                    if (!string.IsNullOrEmpty(currentOrder.orderNo))
                     {
                         UpdateLabels();
                         currentBins = new Dictionary<string, string>();
-                        dgvTools.PrepareDgvForBins(dataGridViewLedReels, currentOrder.BinQty);
-                        LedReels.AddLedReelsForLot(currentOrder.LotNumber, dataGridViewLedReels, ref currentBins);
+                        dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)currentOrder.numberOfBins);
+                        LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins);
                         buttonChangeQty.Visible = true;
                     }
                     textBoxLotNumber.Text = "";
@@ -116,7 +94,7 @@ namespace KITTING_MST
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void butAddLeds_click(object sender, EventArgs e)
         {
             if (labelLotNumber.Text.Length > 6)
             {
@@ -138,10 +116,10 @@ namespace KITTING_MST
                         {
                             if (release)
                             {
-                                MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(ledForm.nc12, ledForm.id, currentOrder.LotNumber, ledForm.binId);
+                                MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(ledForm.nc12, ledForm.id, currentOrder.orderNo, ledForm.binId);
                             }
 
-                            LedReels.AddReelToGrid(ledForm.nc12, ledForm.id, currentOrder.LotNumber, dataGridViewLedReels, ref currentBins);
+                            LedReels.AddReelToGrid(ledForm.nc12, ledForm.id, currentOrder.orderNo, dataGridViewLedReels, ref currentBins);
                         }
                         else
                         {
@@ -185,7 +163,7 @@ namespace KITTING_MST
             dataGridViewLedReels.ClearSelection();
         }
 
-        private void button2_Click_1(object sender, EventArgs e)
+        private void butOrderHistory_click(object sender, EventArgs e)
         {
             LotsHistory historyForm = new LotsHistory(userList.Contains(currentUser));
             historyForm.Show();
@@ -212,15 +190,15 @@ namespace KITTING_MST
                         string nc12 = dataGridViewLedReels.Rows[e.RowIndex].Cells[0].Value.ToString();
                         string id = dataGridViewLedReels.Rows[e.RowIndex].Cells[1].Value.ToString();
 
-                        using (EditLedReel editForm = new EditLedReel(currentOrder.LotNumber, bin, currentOrder.BinQty))
+                        using (EditLedReel editForm = new EditLedReel(currentOrder.orderNo, bin, (int)currentOrder.numberOfBins))
                         {
                             if (editForm.ShowDialog()== DialogResult.OK)
                             {
                                 MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(nc12, id, editForm.newOrder, editForm.newBin);
 
                                 currentBins = new Dictionary<string, string>();
-                                dgvTools.PrepareDgvForBins(dataGridViewLedReels, currentOrder.BinQty);
-                                LedReels.AddLedReelsForLot(currentOrder.LotNumber, dataGridViewLedReels, ref currentBins);
+                                dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)currentOrder.numberOfBins);
+                                LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins);
                             }
                         }
 
@@ -229,17 +207,17 @@ namespace KITTING_MST
             }
         }
 
-        private void button3_Click(object sender, EventArgs e)
+        private void butChangeQty_click(object sender, EventArgs e)
         {
             if (userList.Contains(currentUser))
             {
-                using (ChangeOrderQty changeQForm = new ChangeOrderQty(currentOrder.OrderedQty))
+                using (ChangeOrderQty changeQForm = new ChangeOrderQty((int)currentOrder.orderedQty))
                 {
                     if (changeQForm.ShowDialog() == DialogResult.OK)
                     {
-                        currentOrder.OrderedQty = changeQForm.newQty;
+                        currentOrder.orderedQty = changeQForm.newQty;
 
-                        MST.MES.SqlOperations.Kitting.UpdateOrderQty(currentOrder.LotNumber, currentOrder.OrderedQty);
+                        MST.MES.SqlOperations.Kitting.UpdateOrderQty(currentOrder.orderNo, (int)currentOrder.orderedQty);
                         UpdateLabels();
                     }
                 }
@@ -247,7 +225,7 @@ namespace KITTING_MST
             else MessageBox.Show("Brak uprawnień");
         }
 
-        private void button3_Click_1(object sender, EventArgs e)
+        private void butEditModel_click(object sender, EventArgs e)
         {
             if (userList.Contains(currentUser))
             {
@@ -255,14 +233,34 @@ namespace KITTING_MST
                 editForm.Show();
             }
             else { MessageBox.Show("Brak uprawnień"); }
-            
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        private void butKartyTechn_click(object sender, EventArgs e)
         {
-            var dv = MST.MES.Data_structures.DevTools.DevToolsLoader.LoadDevToolsModels();
-            var m = dv["101011710346"];
-            ;
+            //var dt = MST.MES.Data_structures.DevTools.DevToolsLoader.LoadDevToolsModels();
+            //var m = dt["101011710346"];
+            //;
+
+            if (currentOrder.orderNo != "")
+            {
+
+            }
+
+            currentOrder = new MST.MES.OrderStructureByOrderNo.Kitting
+            {
+                modelId="model 12NC",
+                 ModelName = "nazwa modelu",
+                 numberOfBins=2,
+                 orderedQty=123
+            };
+
+            currentBins.Add("A", "401056013621");//13621
+            currentBins.Add("B", "401056015161");//15161
+            var excPkg = ExcelOperations.GetExcelPackage("1.xlsx");
+            ExcelOperations.FillOutExcelData(currentOrder,ref excPkg, currentBins, nc12ToName);
+            string tempFile = ExcelOperations.SaveExcelAndReturnPath(excPkg);
+            PrintExcel.SendToPrinter(tempFile);
+            Process.Start(tempFile);
         }
     }
 }

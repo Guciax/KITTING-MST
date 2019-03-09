@@ -135,19 +135,9 @@
             // numericBinQty
             // 
             this.numericBinQty.Location = new System.Drawing.Point(81, 107);
-            this.numericBinQty.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
             this.numericBinQty.Name = "numericBinQty";
             this.numericBinQty.Size = new System.Drawing.Size(48, 20);
             this.numericBinQty.TabIndex = 9;
-            this.numericBinQty.Value = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
             // 
             // label5
             // 
