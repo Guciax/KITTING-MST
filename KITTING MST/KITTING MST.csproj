@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStructure\CurrentBinStruct.cs" />
     <Compile Include="DataStructure\CurrentOrder.cs" />
     <Compile Include="DataStructure\LedReelsStruct.cs" />
     <Compile Include="dgvTools.cs" />
@@ -102,6 +103,7 @@
     </Compile>
     <Compile Include="Karty technologiczne\ExcelOperations.cs" />
     <Compile Include="Karty technologiczne\PrintExcel.cs" />
+    <Compile Include="LedNaming.cs" />
     <Compile Include="LedReels.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

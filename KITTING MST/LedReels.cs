@@ -10,7 +10,7 @@ namespace KITTING_MST
 {
     class LedReels
     {
-        public static void AddLedReelsForLot(string lot, DataGridView grid, ref Dictionary<string, string> currentBins)
+        public static void AddLedReelsForLot(string lot, DataGridView grid, ref Dictionary<string, CurrentBinStruct> currentBins, Dictionary<string, string> nc12ToName)
         {
             DataTable sqlTable = MST.MES.SqlOperations.SparingLedInfo.GetReelsForLot(lot);
             List<string> checkList = new List<string>();
@@ -31,23 +31,47 @@ namespace KITTING_MST
 
                     if (!currentBins.ContainsKey(bin))
                     {
-                        currentBins.Add(bin, nc12);
+                        var ledName = LedNaming.GetLedName(nc12ToName[nc12]);
+                        string cct = "";
+                        foreach (var part in ledName.Split(' '))
+                        {
+                            if (part[part.Length - 1] == 'K') cct = part;
+                        }
+                        CurrentBinStruct binNfo = new CurrentBinStruct
+                        {
+                             cct = cct,
+                             name = ledName,
+                             nc12 = nc12
+                        };
+                        currentBins.Add(bin, binNfo);
                     }
 
-                    AddReelToGrid(nc12, id, aktZlecenie, grid, ref currentBins);
+                    AddReelToGrid(nc12, id, aktZlecenie, grid, ref currentBins, nc12ToName);
                     checkList.Add(nc12 + id);
                 }
             }
         }
 
-        public static void AddReelToGrid(string nc12, string id, string aktZlecenie, DataGridView grid, ref Dictionary<string, string> currentBins)
+        public static void AddReelToGrid(string nc12, string id, string aktZlecenie, DataGridView grid, ref Dictionary<string, CurrentBinStruct> currentBins, Dictionary<string, string> nc12ToName)
         {
             DataTable reelTable = MST.MES.SqlOperations.SparingLedInfo.GetInfoFor12NC_ID(nc12, id);
             string qty = reelTable.Rows[0]["Ilosc"].ToString();
             string binId = reelTable.Rows[0]["Tara"].ToString();
             if (!currentBins.ContainsKey(binId))
             {
-                currentBins.Add(binId, nc12);
+                var ledName = LedNaming.GetLedName(nc12ToName[nc12]);
+                string cct = "";
+                foreach (var part in ledName.Split(' '))
+                {
+                    if (part[part.Length - 1] == 'K') cct = part;
+                }
+                CurrentBinStruct binNfo = new CurrentBinStruct
+                {
+                    cct = cct,
+                    name = ledName,
+                    nc12 = nc12
+                };
+                currentBins.Add(binId, binNfo);
             }
 
 

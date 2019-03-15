@@ -303,7 +303,7 @@
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.label11);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "AddNewLot";
             this.Text = "Dodaj nowe zlecenie";
             this.Load += new System.EventHandler(this.AddNewLot_Load);

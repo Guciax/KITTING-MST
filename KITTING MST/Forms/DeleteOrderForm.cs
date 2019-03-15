@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -34,6 +35,11 @@ namespace KITTING_MST.Forms
             label10Nc.Text += model10Nc;
             labelQty.Text += orderedQty;
             labelKittingDate.Text += kittingDate;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            File.AppendAllText("log.txt", $"{DateTime.Now.ToString()};{Environment.UserName};{orderNo};Usunięcie zlecenie" + Environment.NewLine);
         }
     }
 }

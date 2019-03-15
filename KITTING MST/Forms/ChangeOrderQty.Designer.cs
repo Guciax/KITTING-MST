@@ -79,6 +79,7 @@
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "ChangeOrderQty";
             this.Text = "Ilość";
             this.Load += new System.EventHandler(this.ChangeOrderQty_Load);

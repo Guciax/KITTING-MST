@@ -20,9 +20,10 @@ namespace KITTING_MST
         ///<summary>
         ///BIN letter => LED 12NC
         ///</summary>
-        Dictionary<string, string> currentBins = new Dictionary<string, string>();
+        Dictionary<string, CurrentBinStruct> currentBins = new Dictionary<string, CurrentBinStruct>();
         Dictionary<string, MST.MES.ModelInfo.ModelSpecification> mesModels;
         Dictionary<string, string> nc12ToName;
+        Dictionary<string, MST.MES.Data_structures.DevToolsModelStructure> devToolsDb = new Dictionary<string, MST.MES.Data_structures.DevToolsModelStructure>();
 
         bool release = true;
 
@@ -36,13 +37,16 @@ namespace KITTING_MST
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            #if DEBUG
+            //bwDevTools.RunWorkerAsync();
+#if DEBUG
             //button2.Visible = true;
+            buttonKartaTechnologiczna.Enabled = true;
             release = false;
             #endif
             dataGridViewLedReels.RowsDefaultCellStyle.SelectionBackColor = System.Drawing.Color.Transparent;
             mesModels = MST.MES.SqlDataReaderMethods.MesModels.allModels();
             nc12ToName = MST.MES.SqlOperations.ConnectDB.Nc12ToModelFullDict();
+            
         }
 
         private void UpdateLabels()
@@ -84,9 +88,9 @@ namespace KITTING_MST
                     if (!string.IsNullOrEmpty(currentOrder.orderNo))
                     {
                         UpdateLabels();
-                        currentBins = new Dictionary<string, string>();
+                        currentBins = new Dictionary<string, CurrentBinStruct>();
                         dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)currentOrder.numberOfBins);
-                        LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins);
+                        LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToName);
                         buttonChangeQty.Visible = true;
                     }
                     textBoxLotNumber.Text = "";
@@ -106,7 +110,7 @@ namespace KITTING_MST
 
                         if (currentBins.ContainsKey(ledForm.binId))
                         {
-                            if (ledForm.nc12 != currentBins[ledForm.binId])
+                            if (ledForm.nc12 != currentBins[ledForm.binId].nc12)
                             {
                                 binAnd12NCCorrect = false;
                             }
@@ -119,14 +123,14 @@ namespace KITTING_MST
                                 MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(ledForm.nc12, ledForm.id, currentOrder.orderNo, ledForm.binId);
                             }
 
-                            LedReels.AddReelToGrid(ledForm.nc12, ledForm.id, currentOrder.orderNo, dataGridViewLedReels, ref currentBins);
+                            LedReels.AddReelToGrid(ledForm.nc12, ledForm.id, currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToName);
                         }
                         else
                         {
                             string correctBin = "";
                             foreach (var binEntry in currentBins)
                             {
-                                if (binEntry.Value == ledForm.nc12)
+                                if (binEntry.Value.nc12 == ledForm.nc12)
                                 {
                                     correctBin = binEntry.Key;
                                 }
@@ -196,9 +200,9 @@ namespace KITTING_MST
                             {
                                 MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(nc12, id, editForm.newOrder, editForm.newBin);
 
-                                currentBins = new Dictionary<string, string>();
+                                currentBins = new Dictionary<string, CurrentBinStruct>();
                                 dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)currentOrder.numberOfBins);
-                                LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins);
+                                LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToName);
                             }
                         }
 
@@ -237,30 +241,55 @@ namespace KITTING_MST
 
         private void butKartyTechn_click(object sender, EventArgs e)
         {
-            //var dt = MST.MES.Data_structures.DevTools.DevToolsLoader.LoadDevToolsModels();
-            //var m = dt["101011710346"];
-            //;
 
-            if (currentOrder.orderNo != "")
+            //var m = devToolsDb.Select(i => i.Value).Where(n => n.nc12== "401046000791").ToList();
+            //Dictionary<string, float> quantityPerCct = new Dictionary<string, float>();
+            //var mdl = devToolsDb[$"{currentOrder.modelId}00"];
+            //foreach (var item in mdl.children)
+            //{
+            //    if (item.nc12.StartsWith("6010616"))
+            //    {
+            //        foreach (var comp in item.children)
+            //        {
+            //            if (comp.nc12.StartsWith("4010460"))
+            //            {
+            //                ;
+            //            }
+            //        }
+
+            //    }
+            //}
+
+
+
+            //currentOrder = new MST.MES.OrderStructureByOrderNo.Kitting
+            //{
+            //    modelId="model 12NC",
+            //     ModelName = "nazwa modelu",
+            //     numberOfBins=2,
+            //     orderedQty=123
+            //};
+
+            //currentBins.Add("A", "401056013621");//13621
+            //currentBins.Add("B", "401056015161");//15161
+            var excPkg = ExcelOperations.GetExcelPackage(currentOrder.modelId);
+            if (excPkg != null)
             {
-
+                ExcelOperations.FillOutExcelData(currentOrder, ref excPkg, currentBins, nc12ToName);
+                string tempFile = ExcelOperations.SaveExcelAndReturnPath(excPkg);
+                //PrintExcel.SendToPrinter(tempFile);
+                Process.Start(tempFile);
             }
+    }
 
-            currentOrder = new MST.MES.OrderStructureByOrderNo.Kitting
-            {
-                modelId="model 12NC",
-                 ModelName = "nazwa modelu",
-                 numberOfBins=2,
-                 orderedQty=123
-            };
+        private void bwDevTools_DoWork(object sender, DoWorkEventArgs e)
+        {
+            devToolsDb = MST.MES.Data_structures.DevTools.DevToolsLoader.LoadDevToolsModels();
+        }
 
-            currentBins.Add("A", "401056013621");//13621
-            currentBins.Add("B", "401056015161");//15161
-            var excPkg = ExcelOperations.GetExcelPackage("1.xlsx");
-            ExcelOperations.FillOutExcelData(currentOrder,ref excPkg, currentBins, nc12ToName);
-            string tempFile = ExcelOperations.SaveExcelAndReturnPath(excPkg);
-            PrintExcel.SendToPrinter(tempFile);
-            Process.Start(tempFile);
+        private void bwDevTools_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            buttonKartaTechnologiczna.Enabled = true;
         }
     }
 }

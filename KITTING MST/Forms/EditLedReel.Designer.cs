@@ -136,6 +136,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.labelCurrentData);
             this.Controls.Add(this.label1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "EditLedReel";
             this.Text = "EditLedReel";
             this.Load += new System.EventHandler(this.EditLedReel_Load);

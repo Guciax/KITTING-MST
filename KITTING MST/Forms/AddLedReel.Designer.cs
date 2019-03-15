@@ -74,6 +74,7 @@
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.labelInfo);
             this.Controls.Add(this.textBox1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "AddLedReel";
             this.Text = "AddLedReel";
             this.Load += new System.EventHandler(this.AddLedReel_Load);

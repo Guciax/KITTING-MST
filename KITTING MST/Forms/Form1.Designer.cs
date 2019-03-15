@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.panel2 = new System.Windows.Forms.Panel();
             this.dataGridViewLedReels = new System.Windows.Forms.DataGridView();
             this.NC12 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ID = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -40,7 +39,11 @@
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
-            this.button4 = new System.Windows.Forms.Button();
+            this.buttonKartaTechnologiczna = new System.Windows.Forms.Button();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.textBoxLotNumber = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.panel2 = new System.Windows.Forms.Panel();
             this.buttonChangeQty = new System.Windows.Forms.Button();
             this.labelRequiredLeds = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
@@ -61,14 +64,12 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.textBoxLotNumber = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
+            this.bwDevTools = new System.ComponentModel.BackgroundWorker();
             this.tableLayoutPanel1.SuspendLayout();
-            this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewLedReels)).BeginInit();
             this.tableLayoutPanel2.SuspendLayout();
             this.panel1.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel1
@@ -89,36 +90,6 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(467, 731);
             this.tableLayoutPanel1.TabIndex = 0;
-            // 
-            // panel2
-            // 
-            this.panel2.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.panel2.Controls.Add(this.buttonChangeQty);
-            this.panel2.Controls.Add(this.labelRequiredLeds);
-            this.panel2.Controls.Add(this.label10);
-            this.panel2.Controls.Add(this.labelModelName);
-            this.panel2.Controls.Add(this.labelModel);
-            this.panel2.Controls.Add(this.labelBinQty);
-            this.panel2.Controls.Add(this.label9);
-            this.panel2.Controls.Add(this.labelLedsPerModel);
-            this.panel2.Controls.Add(this.label7);
-            this.panel2.Controls.Add(this.labelStartDate);
-            this.panel2.Controls.Add(this.labelOrderedQty);
-            this.panel2.Controls.Add(this.label6);
-            this.panel2.Controls.Add(this.label5);
-            this.panel2.Controls.Add(this.labelLotNumber);
-            this.panel2.Controls.Add(this.label12NC);
-            this.panel2.Controls.Add(this.label3);
-            this.panel2.Controls.Add(this.label2);
-            this.panel2.Controls.Add(this.label1);
-            this.panel2.Controls.Add(this.label8);
-            this.panel2.Controls.Add(this.label11);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel2.Location = new System.Drawing.Point(1, 51);
-            this.panel2.Margin = new System.Windows.Forms.Padding(1);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(465, 198);
-            this.panel2.TabIndex = 1;
             // 
             // dataGridViewLedReels
             // 
@@ -177,6 +148,7 @@
             // 
             // tableLayoutPanel2
             // 
+            this.tableLayoutPanel2.BackColor = System.Drawing.Color.Transparent;
             this.tableLayoutPanel2.ColumnCount = 4;
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
             this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
@@ -185,13 +157,13 @@
             this.tableLayoutPanel2.Controls.Add(this.button1, 0, 0);
             this.tableLayoutPanel2.Controls.Add(this.button2, 3, 0);
             this.tableLayoutPanel2.Controls.Add(this.button3, 2, 0);
-            this.tableLayoutPanel2.Controls.Add(this.button4, 1, 0);
+            this.tableLayoutPanel2.Controls.Add(this.buttonKartaTechnologiczna, 1, 0);
             this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 684);
             this.tableLayoutPanel2.Name = "tableLayoutPanel2";
             this.tableLayoutPanel2.RowCount = 1;
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 44F));
             this.tableLayoutPanel2.Size = new System.Drawing.Size(461, 44);
             this.tableLayoutPanel2.TabIndex = 26;
             // 
@@ -234,18 +206,80 @@
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.butEditModel_click);
             // 
-            // button4
+            // buttonKartaTechnologiczna
             // 
-            this.button4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.button4.Location = new System.Drawing.Point(116, 1);
-            this.button4.Margin = new System.Windows.Forms.Padding(1);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(113, 42);
-            this.button4.TabIndex = 25;
-            this.button4.TabStop = false;
-            this.button4.Text = "Karta technologiczna";
-            this.button4.UseVisualStyleBackColor = true;
-            this.button4.Click += new System.EventHandler(this.butKartyTechn_click);
+            this.buttonKartaTechnologiczna.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.buttonKartaTechnologiczna.Enabled = false;
+            this.buttonKartaTechnologiczna.Location = new System.Drawing.Point(116, 1);
+            this.buttonKartaTechnologiczna.Margin = new System.Windows.Forms.Padding(1);
+            this.buttonKartaTechnologiczna.Name = "buttonKartaTechnologiczna";
+            this.buttonKartaTechnologiczna.Size = new System.Drawing.Size(113, 42);
+            this.buttonKartaTechnologiczna.TabIndex = 25;
+            this.buttonKartaTechnologiczna.TabStop = false;
+            this.buttonKartaTechnologiczna.Text = "Karta technologiczna";
+            this.buttonKartaTechnologiczna.UseVisualStyleBackColor = true;
+            this.buttonKartaTechnologiczna.Click += new System.EventHandler(this.butKartyTechn_click);
+            // 
+            // panel1
+            // 
+            this.panel1.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.panel1.Controls.Add(this.textBoxLotNumber);
+            this.panel1.Controls.Add(this.label4);
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel1.Location = new System.Drawing.Point(1, 1);
+            this.panel1.Margin = new System.Windows.Forms.Padding(1);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(465, 48);
+            this.panel1.TabIndex = 0;
+            // 
+            // textBoxLotNumber
+            // 
+            this.textBoxLotNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.textBoxLotNumber.Location = new System.Drawing.Point(9, 20);
+            this.textBoxLotNumber.Name = "textBoxLotNumber";
+            this.textBoxLotNumber.Size = new System.Drawing.Size(440, 23);
+            this.textBoxLotNumber.TabIndex = 2;
+            this.textBoxLotNumber.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxLotNumber_KeyDown);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.label4.Location = new System.Drawing.Point(9, 3);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(110, 17);
+            this.label4.TabIndex = 1;
+            this.label4.Text = "Numer zlecenia:";
+            // 
+            // panel2
+            // 
+            this.panel2.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.panel2.Controls.Add(this.buttonChangeQty);
+            this.panel2.Controls.Add(this.labelRequiredLeds);
+            this.panel2.Controls.Add(this.label10);
+            this.panel2.Controls.Add(this.labelModelName);
+            this.panel2.Controls.Add(this.labelModel);
+            this.panel2.Controls.Add(this.labelBinQty);
+            this.panel2.Controls.Add(this.label9);
+            this.panel2.Controls.Add(this.labelLedsPerModel);
+            this.panel2.Controls.Add(this.label7);
+            this.panel2.Controls.Add(this.labelStartDate);
+            this.panel2.Controls.Add(this.labelOrderedQty);
+            this.panel2.Controls.Add(this.label6);
+            this.panel2.Controls.Add(this.label5);
+            this.panel2.Controls.Add(this.labelLotNumber);
+            this.panel2.Controls.Add(this.label12NC);
+            this.panel2.Controls.Add(this.label3);
+            this.panel2.Controls.Add(this.label2);
+            this.panel2.Controls.Add(this.label1);
+            this.panel2.Controls.Add(this.label8);
+            this.panel2.Controls.Add(this.label11);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel2.Location = new System.Drawing.Point(1, 51);
+            this.panel2.Margin = new System.Windows.Forms.Padding(1);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(465, 198);
+            this.panel2.TabIndex = 1;
             // 
             // buttonChangeQty
             // 
@@ -448,41 +482,16 @@
             this.label11.TabIndex = 20;
             this.label11.Text = "___________________________________________________________________";
             // 
-            // panel1
+            // bwDevTools
             // 
-            this.panel1.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.panel1.Controls.Add(this.textBoxLotNumber);
-            this.panel1.Controls.Add(this.label4);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(1, 1);
-            this.panel1.Margin = new System.Windows.Forms.Padding(1);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(465, 48);
-            this.panel1.TabIndex = 0;
-            // 
-            // textBoxLotNumber
-            // 
-            this.textBoxLotNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.textBoxLotNumber.Location = new System.Drawing.Point(9, 20);
-            this.textBoxLotNumber.Name = "textBoxLotNumber";
-            this.textBoxLotNumber.Size = new System.Drawing.Size(440, 23);
-            this.textBoxLotNumber.TabIndex = 2;
-            this.textBoxLotNumber.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxLotNumber_KeyDown);
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label4.Location = new System.Drawing.Point(9, 3);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(110, 17);
-            this.label4.TabIndex = 1;
-            this.label4.Text = "Numer zlecenia:";
+            this.bwDevTools.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bwDevTools_DoWork);
+            this.bwDevTools.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bwDevTools_RunWorkerCompleted);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.ClientSize = new System.Drawing.Size(467, 731);
             this.Controls.Add(this.tableLayoutPanel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
@@ -490,12 +499,12 @@
             this.Text = "KITTING MST";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.tableLayoutPanel1.ResumeLayout(false);
-            this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewLedReels)).EndInit();
             this.tableLayoutPanel2.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -536,8 +545,9 @@
         private System.Windows.Forms.DataGridViewButtonColumn Column2;
         private System.Windows.Forms.Button buttonChangeQty;
         private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button buttonKartaTechnologiczna;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.ComponentModel.BackgroundWorker bwDevTools;
     }
 }
 

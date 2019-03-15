@@ -196,6 +196,7 @@
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "EditModel";
             this.Text = "EditModel";
             this.Load += new System.EventHandler(this.EditModel_Load);

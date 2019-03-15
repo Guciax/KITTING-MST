@@ -26,7 +26,7 @@ namespace KITTING_MST.Forms
         private void LotsHistory_Load(object sender, EventArgs e)
         {
             //sqlTable = MST.MES.SqlOperations.Kitting.GetMstKittingTable(500);
-            orders = MST.MES.SqlDataReaderMethods.Kitting.GetOrdersInfoByDataReader(30);
+            orders = MST.MES.SqlDataReaderMethods.Kitting.GetOrdersInfoByDataReader(90);
             //Nr_Zlecenia_Produkcyjnego,NC12_wyrobu,Ilosc_wyrobu_zlecona,Data_Poczatku_Zlecenia,Data_Konca_Zlecenia,IloscKIT,MRM
 
             FillGrid();
