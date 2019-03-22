@@ -1,4 +1,6 @@
-﻿using System;
+﻿using KITTING_MST.DataStructure;
+using KITTING_MST.Forms;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -59,6 +61,37 @@ namespace KITTING_MST
                 if (r == grid.Rows.Count - 1)
                 {
                     grid.Rows[lastBin].Cells[2].Value = binSum;
+                }
+            }
+        }
+
+        public static void ShowLedDetails(DataGridView dataGridViewLedReels, int rowIndex,ref Dictionary<string, CurrentBinStruct> currentBins, MST.MES.OrderStructureByOrderNo.Kitting currentOrder, Dictionary<string, LedOracleSpec> nc12ToName)
+        {
+            if (dataGridViewLedReels.Rows[rowIndex].Cells[3].Value != null)
+            {
+                string bin = "";
+                for (int r = rowIndex; r >= 0; r--)
+                {
+                    if (dataGridViewLedReels.Rows[r].Cells[1].Value.ToString().Contains("BIN"))
+                    {
+                        bin = dataGridViewLedReels.Rows[r].Cells[1].Value.ToString().Replace("BIN", "").Trim();
+                        break;
+                    }
+                }
+                string aktZlec = dataGridViewLedReels.Rows[rowIndex].Cells[3].Value.ToString();
+                string nc12 = dataGridViewLedReels.Rows[rowIndex].Cells[0].Value.ToString();
+                string id = dataGridViewLedReels.Rows[rowIndex].Cells[1].Value.ToString();
+
+                using (EditLedReel editForm = new EditLedReel(currentOrder.orderNo, bin, (int)currentOrder.numberOfBins))
+                {
+                    if (editForm.ShowDialog() == DialogResult.OK)
+                    {
+                        MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(nc12, id, editForm.newOrder, editForm.newBin);
+
+                        currentBins = new Dictionary<string, CurrentBinStruct>();
+                        dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)currentOrder.numberOfBins);
+                        LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToName);
+                    }
                 }
             }
         }

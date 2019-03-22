@@ -216,7 +216,7 @@
             this.buttonKartaTechnologiczna.Size = new System.Drawing.Size(113, 42);
             this.buttonKartaTechnologiczna.TabIndex = 25;
             this.buttonKartaTechnologiczna.TabStop = false;
-            this.buttonKartaTechnologiczna.Text = "Karta technologiczna";
+            this.buttonKartaTechnologiczna.Text = "Wczytywanie danych...";
             this.buttonKartaTechnologiczna.UseVisualStyleBackColor = true;
             this.buttonKartaTechnologiczna.Click += new System.EventHandler(this.butKartyTechn_click);
             // 
@@ -239,6 +239,7 @@
             this.textBoxLotNumber.Name = "textBoxLotNumber";
             this.textBoxLotNumber.Size = new System.Drawing.Size(440, 23);
             this.textBoxLotNumber.TabIndex = 2;
+            this.textBoxLotNumber.Text = "1810830";
             this.textBoxLotNumber.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxLotNumber_KeyDown);
             // 
             // label4

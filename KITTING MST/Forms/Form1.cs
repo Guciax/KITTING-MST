@@ -17,17 +17,15 @@ namespace KITTING_MST
     {
         MST.MES.OrderStructureByOrderNo.Kitting currentOrder = new MST.MES.OrderStructureByOrderNo.Kitting();
 
-        ///<summary>
-        ///BIN letter => LED 12NC
-        ///</summary>
+
         Dictionary<string, CurrentBinStruct> currentBins = new Dictionary<string, CurrentBinStruct>();
         Dictionary<string, MST.MES.ModelInfo.ModelSpecification> mesModels;
-        Dictionary<string, string> nc12ToName;
+        Dictionary<string, LedOracleSpec> nc12ToOracleSpec;
         Dictionary<string, MST.MES.Data_structures.DevToolsModelStructure> devToolsDb = new Dictionary<string, MST.MES.Data_structures.DevToolsModelStructure>();
 
         bool release = true;
-
         string[] userList = new string[] { "piotr.dabrowski", "wojciech.komor", "katarzyna.kustra", "tomasz.jurkin", "grazyna.fabisiak", "mariola.czernis", "kitting.elektronika" };
+        string[] superuserList = new string[] { "piotrdabrowski", "wojciech.komor", "katarzyna.kustra" };
         string currentUser = Environment.UserName;
 
         public Form1()
@@ -37,15 +35,15 @@ namespace KITTING_MST
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            //bwDevTools.RunWorkerAsync();
-#if DEBUG
-            //button2.Visible = true;
-            buttonKartaTechnologiczna.Enabled = true;
-            release = false;
+            bwDevTools.RunWorkerAsync();
+            #if DEBUG
+                //button2.Visible = true;
+                //buttonKartaTechnologiczna.Enabled = true;
+                release = false;
             #endif
             dataGridViewLedReels.RowsDefaultCellStyle.SelectionBackColor = System.Drawing.Color.Transparent;
             mesModels = MST.MES.SqlDataReaderMethods.MesModels.allModels();
-            nc12ToName = MST.MES.SqlOperations.ConnectDB.Nc12ToModelFullDict();
+            nc12ToOracleSpec = SqlOperations.Nc12ToOracleSpec();
             
         }
 
@@ -90,7 +88,7 @@ namespace KITTING_MST
                         UpdateLabels();
                         currentBins = new Dictionary<string, CurrentBinStruct>();
                         dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)currentOrder.numberOfBins);
-                        LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToName);
+                        LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToOracleSpec);
                         buttonChangeQty.Visible = true;
                     }
                     textBoxLotNumber.Text = "";
@@ -123,7 +121,7 @@ namespace KITTING_MST
                                 MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(ledForm.nc12, ledForm.id, currentOrder.orderNo, ledForm.binId);
                             }
 
-                            LedReels.AddReelToGrid(ledForm.nc12, ledForm.id, currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToName);
+                            LedReels.AddReelToGrid(ledForm.nc12, ledForm.id, currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToOracleSpec);
                         }
                         else
                         {
@@ -140,13 +138,6 @@ namespace KITTING_MST
                     }
                 }
             }
-        }
-
-        
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            
         }
 
         private void label12NC_TextChanged(object sender, EventArgs e)
@@ -179,34 +170,7 @@ namespace KITTING_MST
             {
                 if (e.ColumnIndex == 4)
                 {
-                    if (dataGridViewLedReels.Rows[e.RowIndex].Cells[3].Value != null)
-                    {
-                        string bin = "";
-                        for (int r = e.RowIndex; r >= 0; r--)
-                        {
-                            if (dataGridViewLedReels.Rows[r].Cells[1].Value.ToString().Contains("BIN"))
-                            {
-                                bin = dataGridViewLedReels.Rows[r].Cells[1].Value.ToString().Replace("BIN", "").Trim();
-                                break;
-                            }
-                        }
-                        string aktZlec = dataGridViewLedReels.Rows[e.RowIndex].Cells[3].Value.ToString();
-                        string nc12 = dataGridViewLedReels.Rows[e.RowIndex].Cells[0].Value.ToString();
-                        string id = dataGridViewLedReels.Rows[e.RowIndex].Cells[1].Value.ToString();
-
-                        using (EditLedReel editForm = new EditLedReel(currentOrder.orderNo, bin, (int)currentOrder.numberOfBins))
-                        {
-                            if (editForm.ShowDialog()== DialogResult.OK)
-                            {
-                                MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(nc12, id, editForm.newOrder, editForm.newBin);
-
-                                currentBins = new Dictionary<string, CurrentBinStruct>();
-                                dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)currentOrder.numberOfBins);
-                                LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToName);
-                            }
-                        }
-
-                    }
+                    dgvTools.ShowLedDetails(dataGridViewLedReels, e.RowIndex, ref currentBins, currentOrder, nc12ToOracleSpec);
                 }
             }
         }
@@ -241,46 +205,85 @@ namespace KITTING_MST
 
         private void butKartyTechn_click(object sender, EventArgs e)
         {
+            if (currentOrder.orderNo =="" )
+            {
+                MessageBox.Show("Wczytaj lub utwórz zlecenie");
+                return;
+            }
 
-            //var m = devToolsDb.Select(i => i.Value).Where(n => n.nc12== "401046000791").ToList();
-            //Dictionary<string, float> quantityPerCct = new Dictionary<string, float>();
-            //var mdl = devToolsDb[$"{currentOrder.modelId}00"];
-            //foreach (var item in mdl.children)
-            //{
-            //    if (item.nc12.StartsWith("6010616"))
-            //    {
-            //        foreach (var comp in item.children)
-            //        {
-            //            if (comp.nc12.StartsWith("4010460"))
-            //            {
-            //                ;
-            //            }
-            //        }
+            if (!devToolsDb.ContainsKey(currentOrder.modelId + "00"))
+            {
+                MessageBox.Show("Brak danych w DevTools - wpisz ilości LED ręcznie");
+                //........
+            }
 
-            //    }
-            //}
+            Dictionary<string, float> quantityPerCct = new Dictionary<string, float>();
+            var dtModel = devToolsDb[$"{currentOrder.modelId}00"];
 
+            bool ledCheck = true;
+            Dictionary<string, LedStructForTechnologicSpec> ledForTechCard = new Dictionary<string, LedStructForTechnologicSpec>();
+            foreach (var binEntry in currentBins)
+            {
+                var ledInfo = nc12ToOracleSpec[binEntry.Value.nc12];
+                MST.MES.Data_structures.DevToolsModelStructure dtLedInfo;
+                devToolsDb.TryGetValue(ledInfo.collective, out dtLedInfo);
+                if (!dtModel.qtyPerComponent.ContainsKey(ledInfo.collective))
+                {
+                    ledCheck = false;
+                    break;
+                }
+                if (!ledForTechCard.ContainsKey(ledInfo.collective))
+                {
+                    ledForTechCard.Add(ledInfo.collective, new LedStructForTechnologicSpec
+                    {
+                        collective12NC = ledInfo.collective,
+                        qtyPerModel = dtModel.qtyPerComponent[ledInfo.collective],
+                        name=binEntry.Value.name
+                    });
 
+                    if (dtLedInfo != null)
+                    {
+                        foreach (var atrEntry in dtLedInfo.atributes)
+                        {
+                            if (atrEntry.Key.ToUpper().Contains("CCT")){
+                                ledForTechCard[ledInfo.collective].CCT = atrEntry.Value;
+                            }
+                            if (atrEntry.Key.ToUpper().Contains("CRI")){
+                                ledForTechCard[ledInfo.collective].CRI = atrEntry.Value;
+                            }
+                            if (atrEntry.Key.ToUpper().Contains("OBUDOWA")){
+                                ledForTechCard[ledInfo.collective].package = atrEntry.Value;
+                            }
+                        }
+                    }
+                    
+                }
 
-            //currentOrder = new MST.MES.OrderStructureByOrderNo.Kitting
-            //{
-            //    modelId="model 12NC",
-            //     ModelName = "nazwa modelu",
-            //     numberOfBins=2,
-            //     orderedQty=123
-            //};
+                ledForTechCard[ledInfo.collective].membersList.Add(ledInfo);
+            }
 
-            //currentBins.Add("A", "401056013621");//13621
-            //currentBins.Add("B", "401056015161");//15161
-            var excPkg = ExcelOperations.GetExcelPackage(currentOrder.modelId);
+            if (!ledCheck)
+            {
+                if (!superuserList.Contains(currentUser))
+                {
+                    MessageBox.Show("Błąd danych - dioda LED nie neleży do struktury danych." + Environment.NewLine + Environment.NewLine +"Brak uprawnień do stworzenia niestandardowego - tylko Mistrz i Pierwszy Operator");
+                    return;
+                }
+
+                if (superuserList.Contains(currentUser))
+                {
+                    MessageBox.Show("Błąd danych - dioda LED nie neleży do struktury danych." + Environment.NewLine + "Należy ręcznie wpisać nazwę, 12NC i ilość diody");
+                }
+            }
+
+            var excPkg = ExcelOperations.GetExcelPackage("46TEST");// currentOrder.modelId);
             if (excPkg != null)
             {
-                ExcelOperations.FillOutExcelData(currentOrder, ref excPkg, currentBins, nc12ToName);
+                ExcelOperations.FillOutExcelData(currentOrder, ref excPkg, ledForTechCard);
                 string tempFile = ExcelOperations.SaveExcelAndReturnPath(excPkg);
-                //PrintExcel.SendToPrinter(tempFile);
                 Process.Start(tempFile);
             }
-    }
+        }
 
         private void bwDevTools_DoWork(object sender, DoWorkEventArgs e)
         {
@@ -290,6 +293,7 @@ namespace KITTING_MST
         private void bwDevTools_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             buttonKartaTechnologiczna.Enabled = true;
+            buttonKartaTechnologiczna.Text = "Karta technologiczna";
         }
     }
 }
