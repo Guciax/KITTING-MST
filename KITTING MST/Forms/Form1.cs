@@ -21,11 +21,11 @@ namespace KITTING_MST
         Dictionary<string, CurrentBinStruct> currentBins = new Dictionary<string, CurrentBinStruct>();
         Dictionary<string, MST.MES.ModelInfo.ModelSpecification> mesModels;
         Dictionary<string, LedOracleSpec> nc12ToOracleSpec;
-        Dictionary<string, MST.MES.Data_structures.DevToolsModelStructure> devToolsDb = new Dictionary<string, MST.MES.Data_structures.DevToolsModelStructure>();
+        List<MST.MES.Data_structures.DevToolsModelStructure> devToolsDb = new List<MST.MES.Data_structures.DevToolsModelStructure>();
 
         bool release = true;
         string[] userList = new string[] { "piotr.dabrowski", "wojciech.komor", "katarzyna.kustra", "tomasz.jurkin", "grazyna.fabisiak", "mariola.czernis", "kitting.elektronika" };
-        string[] superuserList = new string[] { "piotrdabrowski", "wojciech.komor", "katarzyna.kustra" };
+        string[] superuserList = new string[] { "piotr.dabrowski", "wojciech.komor", "katarzyna.kustra" };
         string currentUser = Environment.UserName;
 
         public Form1()
@@ -44,7 +44,6 @@ namespace KITTING_MST
             dataGridViewLedReels.RowsDefaultCellStyle.SelectionBackColor = System.Drawing.Color.Transparent;
             mesModels = MST.MES.SqlDataReaderMethods.MesModels.allModels();
             nc12ToOracleSpec = SqlOperations.Nc12ToOracleSpec();
-            
         }
 
         private void UpdateLabels()
@@ -52,13 +51,22 @@ namespace KITTING_MST
             labelLotNumber.Text = currentOrder.orderNo;
             label12NC.Text = currentOrder.modelId_12NCFormat;
             labelOrderedQty.Text = currentOrder.orderedQty.ToString();
-            labelStartDate.Text = currentOrder.kittingDate.ToShortDateString();
             
             labelBinQty.Text = currentOrder.numberOfBins.ToString();
             labelModelName.Text = currentOrder.ModelName;
 
-            labelRequiredLeds.Text = (currentOrder.orderedQty * mesModels[currentOrder.modelId].ledCountPerModel).ToString();
-            labelLedsPerModel.Text = mesModels[currentOrder.modelId].ledCountPerModel.ToString();
+            labelRequiredLeds.Text = (currentOrder.orderedQty * currentOrder.modelSpec.ledCountPerModel).ToString();
+            labelLedsPerModel.Text = currentOrder.modelSpec.ledCountPerModel.ToString();
+
+            labelorderStart.Text= currentOrder.kittingDate.ToShortDateString(); 
+            if (currentOrder.plannedEnd.Year > 2000) //null = minValue
+            {
+                labelOrderPlannedEnd.Text = currentOrder.plannedEnd.ToShortDateString();
+            }
+            else
+            {
+                labelOrderPlannedEnd.Text = "-";
+            }
         }
 
         private void textBoxLotNumber_KeyDown(object sender, KeyEventArgs e)
@@ -90,6 +98,7 @@ namespace KITTING_MST
                         dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)currentOrder.numberOfBins);
                         LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToOracleSpec);
                         buttonChangeQty.Visible = true;
+                        buttonChangePlannedDate.Visible = true;
                     }
                     textBoxLotNumber.Text = "";
                 }
@@ -210,58 +219,17 @@ namespace KITTING_MST
                 MessageBox.Show("Wczytaj lub utwórz zlecenie");
                 return;
             }
-
-            if (!devToolsDb.ContainsKey(currentOrder.modelId + "00"))
+            bool ledCheck = true;
+            if (devToolsDb.Where(nc => nc.nc12 == currentOrder.modelId + "00").Count() == 0) 
             {
                 MessageBox.Show("Brak danych w DevTools - wpisz ilości LED ręcznie");
+                ledCheck = false;
                 //........
             }
-
-            Dictionary<string, float> quantityPerCct = new Dictionary<string, float>();
-            var dtModel = devToolsDb[$"{currentOrder.modelId}00"];
-
-            bool ledCheck = true;
-            Dictionary<string, LedStructForTechnologicSpec> ledForTechCard = new Dictionary<string, LedStructForTechnologicSpec>();
-            foreach (var binEntry in currentBins)
-            {
-                var ledInfo = nc12ToOracleSpec[binEntry.Value.nc12];
-                MST.MES.Data_structures.DevToolsModelStructure dtLedInfo;
-                devToolsDb.TryGetValue(ledInfo.collective, out dtLedInfo);
-                if (!dtModel.qtyPerComponent.ContainsKey(ledInfo.collective))
-                {
-                    ledCheck = false;
-                    break;
-                }
-                if (!ledForTechCard.ContainsKey(ledInfo.collective))
-                {
-                    ledForTechCard.Add(ledInfo.collective, new LedStructForTechnologicSpec
-                    {
-                        collective12NC = ledInfo.collective,
-                        qtyPerModel = dtModel.qtyPerComponent[ledInfo.collective],
-                        name=binEntry.Value.name
-                    });
-
-                    if (dtLedInfo != null)
-                    {
-                        foreach (var atrEntry in dtLedInfo.atributes)
-                        {
-                            if (atrEntry.Key.ToUpper().Contains("CCT")){
-                                ledForTechCard[ledInfo.collective].CCT = atrEntry.Value;
-                            }
-                            if (atrEntry.Key.ToUpper().Contains("CRI")){
-                                ledForTechCard[ledInfo.collective].CRI = atrEntry.Value;
-                            }
-                            if (atrEntry.Key.ToUpper().Contains("OBUDOWA")){
-                                ledForTechCard[ledInfo.collective].package = atrEntry.Value;
-                            }
-                        }
-                    }
-                    
-                }
-
-                ledForTechCard[ledInfo.collective].membersList.Add(ledInfo);
-            }
-
+            
+            Dictionary<string, LedStructForTechnologicSpec> ledForTechCard = DataPreparation.LedForTechCard(devToolsDb, currentOrder, currentBins, nc12ToOracleSpec, ref ledCheck);
+            
+            bool nonStandardOrder = false; //false
             if (!ledCheck)
             {
                 if (!superuserList.Contains(currentUser))
@@ -273,13 +241,14 @@ namespace KITTING_MST
                 if (superuserList.Contains(currentUser))
                 {
                     MessageBox.Show("Błąd danych - dioda LED nie neleży do struktury danych." + Environment.NewLine + "Należy ręcznie wpisać nazwę, 12NC i ilość diody");
+                    nonStandardOrder = true;
                 }
             }
 
-            var excPkg = ExcelOperations.GetExcelPackage("46TEST");// currentOrder.modelId);
+            var excPkg = ExcelOperations.GetExcelPackage(currentOrder.modelId);// currentOrder.modelId);
             if (excPkg != null)
             {
-                ExcelOperations.FillOutExcelData(currentOrder, ref excPkg, ledForTechCard);
+                ExcelOperations.FillOutExcelData(currentOrder, ref excPkg, ledForTechCard, nonStandardOrder);
                 string tempFile = ExcelOperations.SaveExcelAndReturnPath(excPkg);
                 Process.Start(tempFile);
             }
@@ -292,8 +261,30 @@ namespace KITTING_MST
 
         private void bwDevTools_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            buttonKartaTechnologiczna.Enabled = true;
-            buttonKartaTechnologiczna.Text = "Karta technologiczna";
+            if (devToolsDb.Count > 0)
+            {
+                buttonKartaTechnologiczna.Enabled = true;
+                buttonKartaTechnologiczna.Text = "Karta technologiczna";
+            }
+            else
+            {
+                bwDevTools.RunWorkerAsync();
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (currentOrder.orderNo != "")
+            {
+                using (ChangeDateForm chDate = new ChangeDateForm(currentOrder))
+                {
+                    if(chDate.ShowDialog() == DialogResult.OK)
+                    {
+                        currentOrder.plannedEnd = chDate.selectedDate;
+                        labelOrderPlannedEnd.Text = currentOrder.plannedEnd.ToShortDateString();
+                    }
+                }
+            }
         }
     }
 }

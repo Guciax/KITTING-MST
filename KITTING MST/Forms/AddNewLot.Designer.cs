@@ -50,6 +50,8 @@
             this.labelMesInfo = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.labelValuesChanged = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.dateTimePickerPlannedEndDate = new System.Windows.Forms.DateTimePicker();
             ((System.ComponentModel.ISupportInitialize)(this.numericBinQty)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericLedsPerModel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericConnQty)).BeginInit();
@@ -106,7 +108,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 192);
+            this.label4.Location = new System.Drawing.Point(16, 229);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(92, 13);
             this.label4.TabIndex = 5;
@@ -115,7 +117,7 @@
             // button1
             // 
             this.button1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.button1.Location = new System.Drawing.Point(0, 334);
+            this.button1.Location = new System.Drawing.Point(0, 376);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(336, 31);
             this.button1.TabIndex = 7;
@@ -126,7 +128,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(11, 109);
+            this.label1.Location = new System.Drawing.Point(15, 146);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(67, 13);
             this.label1.TabIndex = 8;
@@ -134,7 +136,7 @@
             // 
             // numericBinQty
             // 
-            this.numericBinQty.Location = new System.Drawing.Point(81, 107);
+            this.numericBinQty.Location = new System.Drawing.Point(85, 144);
             this.numericBinQty.Name = "numericBinQty";
             this.numericBinQty.Size = new System.Drawing.Size(48, 20);
             this.numericBinQty.TabIndex = 9;
@@ -151,7 +153,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(12, 143);
+            this.label6.Location = new System.Drawing.Point(16, 180);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(313, 13);
             this.label6.TabIndex = 11;
@@ -160,7 +162,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(12, 279);
+            this.label7.Location = new System.Drawing.Point(16, 316);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(74, 13);
             this.label7.TabIndex = 12;
@@ -169,7 +171,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(12, 221);
+            this.label8.Location = new System.Drawing.Point(16, 258);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(73, 13);
             this.label8.TabIndex = 14;
@@ -178,7 +180,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(12, 250);
+            this.label9.Location = new System.Drawing.Point(16, 287);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(85, 13);
             this.label9.TabIndex = 15;
@@ -186,7 +188,7 @@
             // 
             // numericLedsPerModel
             // 
-            this.numericLedsPerModel.Location = new System.Drawing.Point(107, 190);
+            this.numericLedsPerModel.Location = new System.Drawing.Point(111, 227);
             this.numericLedsPerModel.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -199,7 +201,7 @@
             // 
             // numericConnQty
             // 
-            this.numericConnQty.Location = new System.Drawing.Point(107, 219);
+            this.numericConnQty.Location = new System.Drawing.Point(111, 256);
             this.numericConnQty.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -212,7 +214,7 @@
             // 
             // numericResQty
             // 
-            this.numericResQty.Location = new System.Drawing.Point(107, 248);
+            this.numericResQty.Location = new System.Drawing.Point(111, 285);
             this.numericResQty.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -225,7 +227,7 @@
             // 
             // numericPcbPerMb
             // 
-            this.numericPcbPerMb.Location = new System.Drawing.Point(107, 277);
+            this.numericPcbPerMb.Location = new System.Drawing.Point(111, 314);
             this.numericPcbPerMb.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -240,7 +242,7 @@
             // 
             this.label10.AutoSize = true;
             this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.label10.Location = new System.Drawing.Point(11, 130);
+            this.label10.Location = new System.Drawing.Point(15, 167);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(175, 13);
             this.label10.TabIndex = 20;
@@ -250,7 +252,7 @@
             // 
             this.labelMesInfo.AutoSize = true;
             this.labelMesInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.labelMesInfo.Location = new System.Drawing.Point(11, 165);
+            this.labelMesInfo.Location = new System.Drawing.Point(15, 202);
             this.labelMesInfo.Name = "labelMesInfo";
             this.labelMesInfo.Size = new System.Drawing.Size(16, 13);
             this.labelMesInfo.TabIndex = 21;
@@ -259,7 +261,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(11, 313);
+            this.label11.Location = new System.Drawing.Point(15, 350);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(313, 13);
             this.label11.TabIndex = 22;
@@ -269,18 +271,37 @@
             // 
             this.labelValuesChanged.AutoSize = true;
             this.labelValuesChanged.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.labelValuesChanged.Location = new System.Drawing.Point(12, 303);
+            this.labelValuesChanged.Location = new System.Drawing.Point(16, 340);
             this.labelValuesChanged.Name = "labelValuesChanged";
             this.labelValuesChanged.Size = new System.Drawing.Size(183, 13);
             this.labelValuesChanged.TabIndex = 23;
             this.labelValuesChanged.Text = "Zmienione wartości zostaną zapisane";
             this.labelValuesChanged.Visible = false;
             // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(15, 113);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(147, 13);
+            this.label12.TabIndex = 24;
+            this.label12.Text = "Planowana data zakończenia";
+            // 
+            // dateTimePickerPlannedEndDate
+            // 
+            this.dateTimePickerPlannedEndDate.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dateTimePickerPlannedEndDate.Location = new System.Drawing.Point(168, 110);
+            this.dateTimePickerPlannedEndDate.Name = "dateTimePickerPlannedEndDate";
+            this.dateTimePickerPlannedEndDate.Size = new System.Drawing.Size(140, 20);
+            this.dateTimePickerPlannedEndDate.TabIndex = 25;
+            // 
             // AddNewLot
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(336, 365);
+            this.ClientSize = new System.Drawing.Size(336, 407);
+            this.Controls.Add(this.dateTimePickerPlannedEndDate);
+            this.Controls.Add(this.label12);
             this.Controls.Add(this.labelValuesChanged);
             this.Controls.Add(this.labelMesInfo);
             this.Controls.Add(this.numericPcbPerMb);
@@ -341,5 +362,7 @@
         private System.Windows.Forms.Label labelMesInfo;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label labelValuesChanged;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.DateTimePicker dateTimePickerPlannedEndDate;
     }
 }

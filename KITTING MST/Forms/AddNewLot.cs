@@ -64,6 +64,11 @@ namespace KITTING_MST.Forms
                 modelName = MST.MES.SqlOperations.ConnectDB.NC12ToModelName(nc10 + "00");
             }
 
+            if (modelName == "")
+            {
+                EditModelNameManually();
+            }
+
             label5.Text = "Nazwa: " + modelName;
         }
 
@@ -100,6 +105,7 @@ namespace KITTING_MST.Forms
                                                              textBox12NC.Text, 
                                                              int.Parse(textBoxOrderedQty.Text), 
                                                              DateTime.Now, 
+                                                             dateTimePickerPlannedEndDate.Value,
                                                              (int)numericBinQty.Value,
                                                              (int)numericLedsPerModel.Value);
 
@@ -107,11 +113,23 @@ namespace KITTING_MST.Forms
             }
         }
 
+        private void EditModelNameManually()
+        {
+            using (AddModelNameManually modelNameForm = new AddModelNameManually())
+            {
+                if (modelNameForm.ShowDialog() == DialogResult.OK)
+                {
+                    modelName = modelNameForm.modelName;
+                }
+            }
+        }
+
         private bool CheckForm()
         {
-            if (modelName == "")
+            if (modelName == "") 
             {
                 MessageBox.Show("Nieznany numer 10NC wyrobu");
+                EditModelNameManually();
                 return false;
             }
             if (textBoxOrderedQty.Text=="" || numericBinQty.Value==0 || numericLedsPerModel.Value == 0 || numericPcbPerMb.Value == 0)
@@ -140,6 +158,8 @@ namespace KITTING_MST.Forms
 
         private void AddNewLot_Load(object sender, EventArgs e)
         {
+            dateTimePickerPlannedEndDate.MinDate = DateTime.Now;
+            dateTimePickerPlannedEndDate.Value = DateTime.Now.AddDays(5);
             labelLotNo.Text += lotNo;
         }
 

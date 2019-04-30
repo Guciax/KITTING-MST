@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -18,6 +20,7 @@ namespace KITTING_MST.Forms
             this.superUser = superUser;
         }
 
+        bool userEntry = true;
 
         //DataTable sqlTable = new DataTable();
         Dictionary<string, MST.MES.OrderStructureByOrderNo.Kitting> orders = new Dictionary<string, MST.MES.OrderStructureByOrderNo.Kitting>();
@@ -28,10 +31,9 @@ namespace KITTING_MST.Forms
             //sqlTable = MST.MES.SqlOperations.Kitting.GetMstKittingTable(500);
             orders = MST.MES.SqlDataReaderMethods.Kitting.GetOrdersInfoByDataReader(90);
             //Nr_Zlecenia_Produkcyjnego,NC12_wyrobu,Ilosc_wyrobu_zlecona,Data_Poczatku_Zlecenia,Data_Konca_Zlecenia,IloscKIT,MRM
-
+            userEntry = false;
             FillGrid();
-            
-
+            userEntry = true;
         }
 
         private void FillGrid()
@@ -47,6 +49,7 @@ namespace KITTING_MST.Forms
                                        orderEntry.Value.ModelName,
                                        orderEntry.Value.orderedQty,
                                        orderEntry.Value.kittingDate,
+                                       orderEntry.Value.plannedEndNullable,
                                        endDate,
                                        orderEntry.Value.numberOfBins );
             }
@@ -105,6 +108,61 @@ namespace KITTING_MST.Forms
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             FillGrid();
+        }
+
+        DateTimePicker dtp;
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex == 5 & e.RowIndex > -1)
+            {
+                DateTime cellDate = DateTime.Now;
+                if (dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value != null)
+                {
+                    if (!DateTime.TryParseExact(dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString(),
+                                                "dd.MM.yyyy",
+                                                CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal,
+                                                out cellDate))
+                    {
+                        cellDate = DateTime.Now.AddDays(5);
+                    }
+                }  
+        
+                dtp = new DateTimePicker();
+                dataGridView1.Controls.Add(dtp);
+                dtp.Format = DateTimePickerFormat.Short;
+                Rectangle Rectangle = dataGridView1.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
+                dtp.Size = new Size(Rectangle.Width, Rectangle.Height);
+                dtp.Location = new Point(Rectangle.X, Rectangle.Y);
+                dtp.Value = cellDate;
+
+                dtp.CloseUp += new EventHandler(dtp_CloseUp);
+                dtp.TextChanged += new EventHandler(dtp_OnTextChange);
+
+                dtp.Visible = true;
+            }
+        }
+        private void dtp_OnTextChange(object sender, EventArgs e)
+        {
+            dataGridView1.CurrentCell.Value = dtp.Text.ToString();
+            
+        }
+        void dtp_CloseUp(object sender, EventArgs e)
+        {
+            dtp.Visible = false;
+        }
+
+        private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex > -1 & e.ColumnIndex == 5 & userEntry) 
+            {
+                DataGridViewCell cell = dataGridView1.Rows[e.RowIndex].Cells[5];
+                if (cell.Value == null) return;
+                Debug.WriteLine(cell.Value.ToString());
+                string orderNo = dataGridView1.Rows[e.RowIndex].Cells[0].Value.ToString();
+                DateTime plannedEnd = DateTime.ParseExact(cell.Value.ToString(), "dd.MM.yyyy", CultureInfo.InvariantCulture);
+                MST.MES.SqlOperations.Kitting.UpdateOrderPlannedEndDate(orderNo, plannedEnd);
+            }
+            
         }
     }
 }

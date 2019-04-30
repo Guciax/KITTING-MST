@@ -37,7 +37,7 @@ namespace KITTING_MST.Karty_technologiczne
 
         public static ExcelPackage GetExcelPackage(string nc12)
         {
-            string filePath = Path.Combine(ExcelParameters.katyTechnologiczneDirPath, $"{nc12}.xlsx");
+            string filePath = Path.Combine(ExcelParameters.katyTechnologiczneDirPath, $"{nc12}46.xlsx");
             if (!Directory.Exists(@"Y:\"))
             {
                 MessageBox.Show($"Brak dostępu do dysku Y:");
@@ -52,10 +52,24 @@ namespace KITTING_MST.Karty_technologiczne
             return new ExcelPackage(new System.IO.FileInfo(filePath));
         }
 
-        public static void FillOutExcelData(MST.MES.OrderStructureByOrderNo.Kitting currentOrder, ref ExcelPackage excelPck, Dictionary<string, LedStructForTechnologicSpec> ledForTechCard)
+        public static void FillOutExcelData(MST.MES.OrderStructureByOrderNo.Kitting currentOrder, ref ExcelPackage excelPck, Dictionary<string, LedStructForTechnologicSpec> ledForTechCard, bool nonStandardOrder)
         {
             excelPck.Workbook.Worksheets[1].Cells[ExcelParameters.orderNoAddress].Value = currentOrder.orderNo.ToString();
             excelPck.Workbook.Worksheets[1].Cells[ExcelParameters.quantityAddress].Value = currentOrder.orderedQty.ToString();
+
+            if (nonStandardOrder)
+            {
+                excelPck.Workbook.Worksheets[1].Row(3).Height = 50;
+                var titleCell = excelPck.Workbook.Worksheets[1].Cells["B3"];
+                titleCell.Value += Environment.NewLine + "ZLECENIE NIESTANDARDOWE - STRUKTURA WYROBU MOŻE SIĘ NIE ZGADZAĆ";
+                titleCell.Style.WrapText = true;
+
+                var titleRange = excelPck.Workbook.Worksheets[1].Cells["B3:N3"];
+                titleRange.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thick;
+                titleRange.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thick;
+                titleRange.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thick;
+                titleRange.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thick;
+            }
 
             char binId = 'A';
             foreach (var collectiveEntry in ledForTechCard)
