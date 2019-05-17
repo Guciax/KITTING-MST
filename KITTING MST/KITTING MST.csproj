@@ -118,6 +118,12 @@
     <Compile Include="Forms\LotsHistory.Designer.cs">
       <DependentUpon>LotsHistory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\NewOrder.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\NewOrder.Designer.cs">
+      <DependentUpon>NewOrder.cs</DependentUpon>
+    </Compile>
     <Compile Include="Karty technologiczne\DataPreparation.cs" />
     <Compile Include="Karty technologiczne\ExcelOperations.cs" />
     <Compile Include="Karty technologiczne\PrintExcel.cs" />
@@ -126,6 +132,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlOperations.cs" />
+    <Compile Include="TesterProgramFiles.cs" />
     <EmbeddedResource Include="Forms\AddLedReel.resx">
       <DependentUpon>AddLedReel.cs</DependentUpon>
     </EmbeddedResource>
@@ -155,6 +162,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\LotsHistory.resx">
       <DependentUpon>LotsHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\NewOrder.resx">
+      <DependentUpon>NewOrder.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

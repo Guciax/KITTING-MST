@@ -75,6 +75,17 @@ namespace KITTING_MST.Forms
         private void textBox12NC_Leave(object sender, EventArgs e)
         {
             TryLoadModel();
+
+            if (TesterProgramFiles.CheckIfProgramAvailable(textBox12NC.Text))
+            {
+                lTestProgram.Text = "Program testowania: OK.";
+                lTestProgram.ForeColor = Color.Black;
+            }
+            else
+            {
+                lTestProgram.Text = "Program testowania: BRAK." + Environment.NewLine + "Powiadom inżyniera.";
+                lTestProgram.ForeColor = Color.Red;
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -105,7 +116,7 @@ namespace KITTING_MST.Forms
                                                              textBox12NC.Text, 
                                                              int.Parse(textBoxOrderedQty.Text), 
                                                              DateTime.Now, 
-                                                             dateTimePickerPlannedEndDate.Value,
+                                                             dateTimePickerPlannedEndDate.Value.Date,
                                                              (int)numericBinQty.Value,
                                                              (int)numericLedsPerModel.Value);
 
@@ -159,7 +170,7 @@ namespace KITTING_MST.Forms
         private void AddNewLot_Load(object sender, EventArgs e)
         {
             dateTimePickerPlannedEndDate.MinDate = DateTime.Now;
-            dateTimePickerPlannedEndDate.Value = DateTime.Now.AddDays(5);
+            dateTimePickerPlannedEndDate.Value = DateTime.Now.Date.AddDays(5);
             labelLotNo.Text += lotNo;
         }
 

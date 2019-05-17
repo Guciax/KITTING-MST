@@ -21,9 +21,11 @@ namespace KITTING_MST.Karty_technologiczne
 
         public class ExcelParameters
         {
-            public static string katyTechnologiczneDirPath = @"Y:\Manufacturing_Center\Integral Quality Management\Karty technologiczne\Karty technologiczne LED\";
+            public static string katyTechnologiczneDirPath = @"Y:\Manufacturing_Center\Integral Quality Management\Karty technologiczne\Karty technologiczne LED\nowe\";
             public static string orderNoAddress = "L4";
-            public static string quantityAddress = "K8";
+            public static string quantityProductionAddress = "L8";
+            public static string quantityShippingAddress = "L10";
+            public static string additionalComment = "B42";
             public static string tempFileName = "kartaTechnologiczna.xlsx";
 
             public static Dictionary<string, BinDescription> binDescriptions = new Dictionary<string, BinDescription>
@@ -52,10 +54,16 @@ namespace KITTING_MST.Karty_technologiczne
             return new ExcelPackage(new System.IO.FileInfo(filePath));
         }
 
-        public static void FillOutExcelData(MST.MES.OrderStructureByOrderNo.Kitting currentOrder, ref ExcelPackage excelPck, Dictionary<string, LedStructForTechnologicSpec> ledForTechCard, bool nonStandardOrder)
+        public static void FillOutExcelData(MST.MES.OrderStructureByOrderNo.Kitting currentOrder, 
+                                            ref ExcelPackage excelPck, Dictionary<string, 
+                                                LedStructForTechnologicSpec> ledForTechCard, 
+                                            bool nonStandardOrder,
+                                            string additionalComment)
         {
+            var ordersHistoryForModel = MST.MES.SqlDataReaderMethods.Kitting.GetKittingDataForModel(currentOrder.modelId);
             excelPck.Workbook.Worksheets[1].Cells[ExcelParameters.orderNoAddress].Value = currentOrder.orderNo.ToString();
-            excelPck.Workbook.Worksheets[1].Cells[ExcelParameters.quantityAddress].Value = currentOrder.orderedQty.ToString();
+            excelPck.Workbook.Worksheets[1].Cells[ExcelParameters.quantityProductionAddress].Value = currentOrder.orderedQty.ToString();
+            excelPck.Workbook.Worksheets[1].Cells[ExcelParameters.quantityShippingAddress].Value = currentOrder.shippingQty.ToString();
 
             if (nonStandardOrder)
             {
@@ -91,12 +99,21 @@ namespace KITTING_MST.Karty_technologiczne
                     binId++;
                 }
             }
+
+            if(!string.IsNullOrWhiteSpace(additionalComment))
+            {
+                excelPck.Workbook.Worksheets[1].Cells[ExcelParameters.additionalComment].Value += Environment.NewLine + additionalComment;
+            }
+            if (ordersHistoryForModel.Count == 0)
+            {
+                excelPck.Workbook.Worksheets[1].Cells[ExcelParameters.additionalComment].Value += Environment.NewLine + "*** Uwaga! Pierwsze zlecenie produkcyjne dla tego modelu! ***";
+            }
         }
 
         public static string SaveExcelAndReturnPath(ExcelPackage excelPck)
         {
             //var bytes = excelPck.GetAsByteArray();
-            string tempFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), ExcelParameters.tempFileName);
+            string tempFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), ExcelParameters.tempFileName);
             //System.IO.File.WriteAllBytes(tempFile, bytes);
             //excelPck.SaveAs(new FileInfo(tempFile));
 

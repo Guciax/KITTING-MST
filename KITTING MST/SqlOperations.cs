@@ -30,7 +30,8 @@ namespace KITTING_MST
                             
                             if (collective == "")
                             {
-                                collective = nc12;
+                                //collective = nc12;
+                                collective = "";
                             }
 
                             

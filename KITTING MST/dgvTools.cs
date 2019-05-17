@@ -11,6 +11,7 @@ namespace KITTING_MST
 {
     class dgvTools
     {
+
         public static void PrepareDgvForBins(DataGridView grid, int binQty)
         {
             grid.Rows.Clear();

@@ -69,20 +69,20 @@ namespace KITTING_MST.Forms
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            var senderGrid = (DataGridView)sender;
+            var grid = (DataGridView)sender;
 
-            if (senderGrid.Columns[e.ColumnIndex] is DataGridViewButtonColumn && e.RowIndex >= 0)
+            if (grid.Columns[e.ColumnIndex] is DataGridViewButtonColumn && e.RowIndex >= 0)
             {
                 //if (superUser)
                 {
-                    string endDate = senderGrid.Rows[e.RowIndex].Cells[5].Value.ToString();
+                    string endDate = grid.Rows[e.RowIndex].Cells[6].Value.ToString();
                     if (endDate == "")
                     {
-                        string lotNo = senderGrid.Rows[e.RowIndex].Cells[0].Value.ToString();
-                        string model10Nc = senderGrid.Rows[e.RowIndex].Cells[1].Value.ToString();
-                        string modelName = senderGrid.Rows[e.RowIndex].Cells[2].Value.ToString();
-                        string orderedQty = senderGrid.Rows[e.RowIndex].Cells[3].Value.ToString();
-                        string kittingDate = senderGrid.Rows[e.RowIndex].Cells[4].Value.ToString();
+                        string lotNo = grid.Rows[e.RowIndex].Cells[0].Value.ToString();
+                        string model10Nc = grid.Rows[e.RowIndex].Cells[1].Value.ToString();
+                        string modelName = grid.Rows[e.RowIndex].Cells[2].Value.ToString();
+                        string orderedQty = grid.Rows[e.RowIndex].Cells[3].Value.ToString();
+                        string kittingDate = grid.Rows[e.RowIndex].Cells[4].Value.ToString();
 
                         DeleteOrderForm delForm = new DeleteOrderForm(lotNo, model10Nc, modelName, orderedQty, kittingDate);
                         if (delForm.ShowDialog() == DialogResult.OK)
@@ -113,33 +113,33 @@ namespace KITTING_MST.Forms
         DateTimePicker dtp;
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.ColumnIndex == 5 & e.RowIndex > -1)
-            {
-                DateTime cellDate = DateTime.Now;
-                if (dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value != null)
-                {
-                    if (!DateTime.TryParseExact(dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString(),
-                                                "dd.MM.yyyy",
-                                                CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal,
-                                                out cellDate))
-                    {
-                        cellDate = DateTime.Now.AddDays(5);
-                    }
-                }  
+            //if (e.ColumnIndex == 5 & e.RowIndex > -1)
+            //{
+            //    DateTime cellDate = DateTime.Now;
+            //    if (dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value != null)
+            //    {
+            //        if (!DateTime.TryParseExact(dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString(),
+            //                                    "dd.MM.yyyy",
+            //                                    CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal,
+            //                                    out cellDate))
+            //        {
+            //            cellDate = DateTime.Now.AddDays(5);
+            //        }
+            //    }  
         
-                dtp = new DateTimePicker();
-                dataGridView1.Controls.Add(dtp);
-                dtp.Format = DateTimePickerFormat.Short;
-                Rectangle Rectangle = dataGridView1.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
-                dtp.Size = new Size(Rectangle.Width, Rectangle.Height);
-                dtp.Location = new Point(Rectangle.X, Rectangle.Y);
-                dtp.Value = cellDate;
+            //    dtp = new DateTimePicker();
+            //    dataGridView1.Controls.Add(dtp);
+            //    dtp.Format = DateTimePickerFormat.Short;
+            //    Rectangle Rectangle = dataGridView1.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
+            //    dtp.Size = new Size(Rectangle.Width, Rectangle.Height);
+            //    dtp.Location = new Point(Rectangle.X, Rectangle.Y);
+            //    dtp.Value = cellDate;
 
-                dtp.CloseUp += new EventHandler(dtp_CloseUp);
-                dtp.TextChanged += new EventHandler(dtp_OnTextChange);
+            //    dtp.CloseUp += new EventHandler(dtp_CloseUp);
+            //    dtp.TextChanged += new EventHandler(dtp_OnTextChange);
 
-                dtp.Visible = true;
-            }
+            //    dtp.Visible = true;
+            //}
         }
         private void dtp_OnTextChange(object sender, EventArgs e)
         {
@@ -153,16 +153,37 @@ namespace KITTING_MST.Forms
 
         private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex > -1 & e.ColumnIndex == 5 & userEntry) 
-            {
-                DataGridViewCell cell = dataGridView1.Rows[e.RowIndex].Cells[5];
-                if (cell.Value == null) return;
-                Debug.WriteLine(cell.Value.ToString());
-                string orderNo = dataGridView1.Rows[e.RowIndex].Cells[0].Value.ToString();
-                DateTime plannedEnd = DateTime.ParseExact(cell.Value.ToString(), "dd.MM.yyyy", CultureInfo.InvariantCulture);
-                MST.MES.SqlOperations.Kitting.UpdateOrderPlannedEndDate(orderNo, plannedEnd);
-            }
+            //if (e.RowIndex > -1 & e.ColumnIndex == 5 & userEntry) 
+            //{
+            //    DataGridViewCell cell = dataGridView1.Rows[e.RowIndex].Cells[5];
+            //    if (cell.Value == null) return;
+            //    Debug.WriteLine(cell.Value.ToString());
+            //    string orderNo = dataGridView1.Rows[e.RowIndex].Cells[0].Value.ToString();
+            //    DateTime plannedEnd = DateTime.ParseExact(cell.Value.ToString(), "dd.MM.yyyy", CultureInfo.InvariantCulture);
+            //    MST.MES.SqlOperations.Kitting.UpdateOrderPlannedEndDate(orderNo, plannedEnd);
+            //}
             
+        }
+
+        private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex>-1 & e.ColumnIndex == 5)
+            {
+                string orderNo = dataGridView1.Rows[e.RowIndex].Cells[0].Value.ToString();
+                DateTime kittingDate = (DateTime)dataGridView1.Rows[e.RowIndex].Cells[4].Value;
+                using (ChangeDateForm chDateF = new ChangeDateForm(orderNo, kittingDate))
+                {
+                    if(chDateF.ShowDialog() == DialogResult.OK)
+                    {
+                        dataGridView1.Rows[e.RowIndex].Cells[5].Value = chDateF.selectedDate;
+                    }
+                }
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

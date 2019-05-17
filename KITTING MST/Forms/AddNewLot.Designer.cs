@@ -52,6 +52,8 @@
             this.labelValuesChanged = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.dateTimePickerPlannedEndDate = new System.Windows.Forms.DateTimePicker();
+            this.label13 = new System.Windows.Forms.Label();
+            this.lTestProgram = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericBinQty)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericLedsPerModel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericConnQty)).BeginInit();
@@ -117,7 +119,7 @@
             // button1
             // 
             this.button1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.button1.Location = new System.Drawing.Point(0, 376);
+            this.button1.Location = new System.Drawing.Point(0, 417);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(336, 31);
             this.button1.TabIndex = 7;
@@ -295,11 +297,32 @@
             this.dateTimePickerPlannedEndDate.Size = new System.Drawing.Size(140, 20);
             this.dateTimePickerPlannedEndDate.TabIndex = 25;
             // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(15, 396);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(313, 13);
+            this.label13.TabIndex = 26;
+            this.label13.Text = "___________________________________________________";
+            // 
+            // lTestProgram
+            // 
+            this.lTestProgram.AutoSize = true;
+            this.lTestProgram.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.lTestProgram.Location = new System.Drawing.Point(16, 370);
+            this.lTestProgram.Name = "lTestProgram";
+            this.lTestProgram.Size = new System.Drawing.Size(103, 13);
+            this.lTestProgram.TabIndex = 27;
+            this.lTestProgram.Text = "Program testowania:";
+            // 
             // AddNewLot
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(336, 407);
+            this.ClientSize = new System.Drawing.Size(336, 448);
+            this.Controls.Add(this.lTestProgram);
+            this.Controls.Add(this.label13);
             this.Controls.Add(this.dateTimePickerPlannedEndDate);
             this.Controls.Add(this.label12);
             this.Controls.Add(this.labelValuesChanged);
@@ -364,5 +387,7 @@
         private System.Windows.Forms.Label labelValuesChanged;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.DateTimePicker dateTimePickerPlannedEndDate;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label lTestProgram;
     }
 }

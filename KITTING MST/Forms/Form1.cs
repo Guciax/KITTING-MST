@@ -16,12 +16,12 @@ namespace KITTING_MST
     public partial class Form1 : Form
     {
         MST.MES.OrderStructureByOrderNo.Kitting currentOrder = new MST.MES.OrderStructureByOrderNo.Kitting();
-
+        List<MST.MES.Data_structures.DevToolsModelStructure> devToolsDb = new List<MST.MES.Data_structures.DevToolsModelStructure>();
 
         Dictionary<string, CurrentBinStruct> currentBins = new Dictionary<string, CurrentBinStruct>();
         Dictionary<string, MST.MES.ModelInfo.ModelSpecification> mesModels;
         Dictionary<string, LedOracleSpec> nc12ToOracleSpec;
-        List<MST.MES.Data_structures.DevToolsModelStructure> devToolsDb = new List<MST.MES.Data_structures.DevToolsModelStructure>();
+        
 
         bool release = true;
         string[] userList = new string[] { "piotr.dabrowski", "wojciech.komor", "katarzyna.kustra", "tomasz.jurkin", "grazyna.fabisiak", "mariola.czernis", "kitting.elektronika" };
@@ -48,17 +48,29 @@ namespace KITTING_MST
 
         private void UpdateLabels()
         {
+            lpcbPerMb.Text = "";
+            var dtModels = devToolsDb.Where(m => m.nc12 == currentOrder.modelId + "00");
+            if(dtModels.Count() > 0)
+            {
+                var dtModel00 = dtModels.First();
+                lpcbPerMb.Text = MST.MES.DtTools.GetPcbPerMbCount(dtModel00).ToString();
+            }
+            
+
             labelLotNumber.Text = currentOrder.orderNo;
             label12NC.Text = currentOrder.modelId_12NCFormat;
             labelOrderedQty.Text = currentOrder.orderedQty.ToString();
             
             labelBinQty.Text = currentOrder.numberOfBins.ToString();
             labelModelName.Text = currentOrder.ModelName;
+            lShippingQty.Text = currentOrder.shippingQty.ToString();
 
             labelRequiredLeds.Text = (currentOrder.orderedQty * currentOrder.modelSpec.ledCountPerModel).ToString();
             labelLedsPerModel.Text = currentOrder.modelSpec.ledCountPerModel.ToString();
 
-            labelorderStart.Text= currentOrder.kittingDate.ToShortDateString(); 
+            labelorderStart.Text= currentOrder.kittingDate.ToShortDateString();
+            lProdWerehouseStock.Text = "";
+            
             if (currentOrder.plannedEnd.Year > 2000) //null = minValue
             {
                 labelOrderPlannedEnd.Text = currentOrder.plannedEnd.ToShortDateString();
@@ -71,9 +83,11 @@ namespace KITTING_MST
 
         private void textBoxLotNumber_KeyDown(object sender, KeyEventArgs e)
         {
-            if (textBoxLotNumber.Text.Length > 5)
+
+
+            if (e.KeyCode == Keys.Return)
             {
-                if (e.KeyCode == Keys.Return)
+                if (textBoxLotNumber.Text.Length > 5 & textBoxLotNumber.Text.Length < 9)
                 {
                     currentOrder = MST.MES.SqlDataReaderMethods.Kitting.GetOneOrderByDataReader(textBoxLotNumber.Text);
 
@@ -99,10 +113,24 @@ namespace KITTING_MST
                         LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToOracleSpec);
                         buttonChangeQty.Visible = true;
                         buttonChangePlannedDate.Visible = true;
+
+                        var prodWerehoueStock = MST.MES.SqlOperations.ConnectDB.CheckHowManyProductsOnProdWerehouse(currentOrder.modelId + "46");
+                        if (prodWerehoueStock.Count > 0)
+                        {
+                            foreach (var locationEntry in prodWerehoueStock)
+                            {
+                                lProdWerehouseStock.Text += $"{locationEntry.Key} - {locationEntry.Value} szt."+Environment.NewLine;
+                            }
+                        }
                     }
                     textBoxLotNumber.Text = "";
                 }
+                else
+                {
+                    MessageBox.Show("Niepoprawny numer zlecenia.");
+                }
             }
+            
         }
 
         private void butAddLeds_click(object sender, EventArgs e)
@@ -188,7 +216,7 @@ namespace KITTING_MST
         {
             if (userList.Contains(currentUser))
             {
-                using (ChangeOrderQty changeQForm = new ChangeOrderQty((int)currentOrder.orderedQty))
+                using (ChangeOrderQty changeQForm = new ChangeOrderQty((int)currentOrder.orderedQty, currentOrder.modelId, int.Parse(lpcbPerMb.Text)))
                 {
                     if (changeQForm.ShowDialog() == DialogResult.OK)
                     {
@@ -219,8 +247,10 @@ namespace KITTING_MST
                 MessageBox.Show("Wczytaj lub utwórz zlecenie");
                 return;
             }
+
             bool ledCheck = true;
-            if (devToolsDb.Where(nc => nc.nc12 == currentOrder.modelId + "00").Count() == 0) 
+            var dtModels = devToolsDb.Where(nc => nc.nc12 == currentOrder.modelId + "00").ToList();
+            if (dtModels.Count() == 0) 
             {
                 MessageBox.Show("Brak danych w DevTools - wpisz ilości LED ręcznie");
                 ledCheck = false;
@@ -228,7 +258,6 @@ namespace KITTING_MST
             }
             
             Dictionary<string, LedStructForTechnologicSpec> ledForTechCard = DataPreparation.LedForTechCard(devToolsDb, currentOrder, currentBins, nc12ToOracleSpec, ref ledCheck);
-            
             bool nonStandardOrder = false; //false
             if (!ledCheck)
             {
@@ -248,7 +277,9 @@ namespace KITTING_MST
             var excPkg = ExcelOperations.GetExcelPackage(currentOrder.modelId);// currentOrder.modelId);
             if (excPkg != null)
             {
-                ExcelOperations.FillOutExcelData(currentOrder, ref excPkg, ledForTechCard, nonStandardOrder);
+                string additionalComment = lProdWerehouseStock.Text != "..." ? $"Wyrób znajduje się na regale: {lProdWerehouseStock.Text}" : "";
+                
+                ExcelOperations.FillOutExcelData(currentOrder, ref excPkg, ledForTechCard, nonStandardOrder, additionalComment);
                 string tempFile = ExcelOperations.SaveExcelAndReturnPath(excPkg);
                 Process.Start(tempFile);
             }
@@ -276,13 +307,25 @@ namespace KITTING_MST
         {
             if (currentOrder.orderNo != "")
             {
-                using (ChangeDateForm chDate = new ChangeDateForm(currentOrder))
+                using (ChangeDateForm chDate = new ChangeDateForm(currentOrder.orderNo, currentOrder.kittingDate))
                 {
                     if(chDate.ShowDialog() == DialogResult.OK)
                     {
                         currentOrder.plannedEnd = chDate.selectedDate;
                         labelOrderPlannedEnd.Text = currentOrder.plannedEnd.ToShortDateString();
                     }
+                }
+            }
+        }
+
+        private void bNewOrders_Click_1(object sender, EventArgs e)
+        {
+            using(NewOrder newOrderForm = new NewOrder())
+            {
+                if (newOrderForm.ShowDialog() == DialogResult.OK)
+                {
+                    textBoxLotNumber.Text = newOrderForm.selectedOrder;
+                    textBoxLotNumber_KeyDown(this, new KeyEventArgs(Keys.Return));
                 }
             }
         }

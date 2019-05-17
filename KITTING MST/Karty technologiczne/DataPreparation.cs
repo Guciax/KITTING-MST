@@ -13,7 +13,6 @@ namespace KITTING_MST.Karty_technologiczne
             Dictionary<string, float> quantityPerCct = new Dictionary<string, float>();
             var dtModel = devToolsDb.Where(nc => nc.nc12 == currentOrder.modelId + "00").First();
 
-            
             Dictionary<string, LedStructForTechnologicSpec> result = new Dictionary<string, LedStructForTechnologicSpec>();
             foreach (var binEntry in currentBins)
             {
@@ -25,6 +24,7 @@ namespace KITTING_MST.Karty_technologiczne
                     ledCheck = false;
                     break;
                 }
+
                 if (!result.ContainsKey(ledInfo.collective))
                 {
                     result.Add(ledInfo.collective, new LedStructForTechnologicSpec
