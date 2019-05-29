@@ -116,7 +116,7 @@ namespace KITTING_MST.Forms
                                                              textBox12NC.Text, 
                                                              int.Parse(textBoxOrderedQty.Text), 
                                                              DateTime.Now, 
-                                                             dateTimePickerPlannedEndDate.Value.Date,
+                                                             dateTimePickerPlannedEndDate.Value.Date.AddHours(12),
                                                              (int)numericBinQty.Value,
                                                              (int)numericLedsPerModel.Value);
 

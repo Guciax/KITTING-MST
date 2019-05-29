@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStorage.cs" />
     <Compile Include="DataStructure\CurrentBinStruct.cs" />
     <Compile Include="DataStructure\CurrentOrder.cs" />
     <Compile Include="DataStructure\LedOracleSpec.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="Karty technologiczne\PrintExcel.cs" />
     <Compile Include="LedNaming.cs" />
     <Compile Include="LedReels.cs" />
+    <Compile Include="OrderLoader.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlOperations.cs" />

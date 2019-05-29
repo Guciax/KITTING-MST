@@ -33,12 +33,11 @@ namespace KITTING_MST
                         }
                     }
                     cell.Style.BackColor = Color.DimGray;
-                    
                 }
                 binId++;
                 grid.Rows.Add();
             }
-            if (grid.Rows.Count>0) grid.Rows.RemoveAt(grid.Rows.Count - 1);
+            if (grid.Rows.Count > 0) grid.Rows.RemoveAt(grid.Rows.Count - 1);
         }
 
         public static void SumUpLedsInBins(DataGridView grid)
@@ -66,7 +65,7 @@ namespace KITTING_MST
             }
         }
 
-        public static void ShowLedDetails(DataGridView dataGridViewLedReels, int rowIndex,ref Dictionary<string, CurrentBinStruct> currentBins, MST.MES.OrderStructureByOrderNo.Kitting currentOrder, Dictionary<string, LedOracleSpec> nc12ToName)
+        public static void ShowLedDetails(DataGridView dataGridViewLedReels, int rowIndex)
         {
             if (dataGridViewLedReels.Rows[rowIndex].Cells[3].Value != null)
             {
@@ -83,15 +82,15 @@ namespace KITTING_MST
                 string nc12 = dataGridViewLedReels.Rows[rowIndex].Cells[0].Value.ToString();
                 string id = dataGridViewLedReels.Rows[rowIndex].Cells[1].Value.ToString();
 
-                using (EditLedReel editForm = new EditLedReel(currentOrder.orderNo, bin, (int)currentOrder.numberOfBins))
+                using (EditLedReel editForm = new EditLedReel(DataStorage.currentOrder.orderNo, bin, (int)DataStorage.currentOrder.numberOfBins))
                 {
                     if (editForm.ShowDialog() == DialogResult.OK)
                     {
                         MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(nc12, id, editForm.newOrder, editForm.newBin);
 
-                        currentBins = new Dictionary<string, CurrentBinStruct>();
-                        dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)currentOrder.numberOfBins);
-                        LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToName);
+                        DataStorage.currentBins = new Dictionary<string, CurrentBinStruct>();
+                        dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)DataStorage.currentOrder.numberOfBins);
+                        LedReels.AddLedReelsForLot(DataStorage.currentOrder.orderNo, dataGridViewLedReels);
                     }
                 }
             }

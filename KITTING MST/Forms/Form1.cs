@@ -11,18 +11,11 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
+
 namespace KITTING_MST
 {
     public partial class Form1 : Form
     {
-        MST.MES.OrderStructureByOrderNo.Kitting currentOrder = new MST.MES.OrderStructureByOrderNo.Kitting();
-        List<MST.MES.Data_structures.DevToolsModelStructure> devToolsDb = new List<MST.MES.Data_structures.DevToolsModelStructure>();
-
-        Dictionary<string, CurrentBinStruct> currentBins = new Dictionary<string, CurrentBinStruct>();
-        Dictionary<string, MST.MES.ModelInfo.ModelSpecification> mesModels;
-        Dictionary<string, LedOracleSpec> nc12ToOracleSpec;
-        
-
         bool release = true;
         string[] userList = new string[] { "piotr.dabrowski", "wojciech.komor", "katarzyna.kustra", "tomasz.jurkin", "grazyna.fabisiak", "mariola.czernis", "kitting.elektronika" };
         string[] superuserList = new string[] { "piotr.dabrowski", "wojciech.komor", "katarzyna.kustra" };
@@ -42,14 +35,15 @@ namespace KITTING_MST
                 release = false;
             #endif
             dataGridViewLedReels.RowsDefaultCellStyle.SelectionBackColor = System.Drawing.Color.Transparent;
-            mesModels = MST.MES.SqlDataReaderMethods.MesModels.allModels();
-            nc12ToOracleSpec = SqlOperations.Nc12ToOracleSpec();
+            DataStorage.mesModels = MST.MES.SqlDataReaderMethods.MesModels.allModels();
+            DataStorage.nc12ToOracleSpec = SqlOperations.Nc12ToOracleSpec();
         }
 
         private void UpdateLabels()
         {
+            var currentOrder = DataStorage.currentOrder;
             lpcbPerMb.Text = "";
-            var dtModels = devToolsDb.Where(m => m.nc12 == currentOrder.modelId + "00");
+            var dtModels = DataStorage.devToolsDb.Where(m => m.nc12 == currentOrder.modelId + "00");
             if(dtModels.Count() > 0)
             {
                 var dtModel00 = dtModels.First();
@@ -81,47 +75,35 @@ namespace KITTING_MST
             }
         }
 
+        private void SetUpComponentsForOrder()
+        {
+            UpdateLabels();
+            DataStorage.currentBins = new Dictionary<string, CurrentBinStruct>();
+            dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)DataStorage.currentOrder.numberOfBins);
+            LedReels.AddLedReelsForLot(DataStorage.currentOrder.orderNo, dataGridViewLedReels);
+            buttonChangeQty.Visible = true;
+            buttonChangePlannedDate.Visible = true;
+
+            var prodWerehoueStock = MST.MES.SqlOperations.ConnectDB.CheckHowManyProductsOnProdWerehouse(DataStorage.currentOrder.modelId + "46");
+            if (prodWerehoueStock.Count > 0)
+            {
+                foreach (var locationEntry in prodWerehoueStock)
+                {
+                    lProdWerehouseStock.Text += $"{locationEntry.Key} - {locationEntry.Value} szt." + Environment.NewLine;
+                }
+            }
+
+        }
+
         private void textBoxLotNumber_KeyDown(object sender, KeyEventArgs e)
         {
-
-
             if (e.KeyCode == Keys.Return)
             {
                 if (textBoxLotNumber.Text.Length > 5 & textBoxLotNumber.Text.Length < 9)
                 {
-                    currentOrder = MST.MES.SqlDataReaderMethods.Kitting.GetOneOrderByDataReader(textBoxLotNumber.Text);
-
-                    if (currentOrder.orderNo == "")
+                    if (OrderLoader.OrderExistOrCreatedNewOne(textBoxLotNumber.Text))
                     {
-                        //new order
-                        using (AddNewLot lotForm = new AddNewLot(textBoxLotNumber.Text, mesModels))
-                        {
-                            if (lotForm.ShowDialog() == DialogResult.OK)
-                            {
-                                currentOrder = MST.MES.SqlDataReaderMethods.Kitting.GetOneOrderByDataReader(textBoxLotNumber.Text);
-                            }
-                        }
-                    }
-
-                    textBoxLotNumber.Text = "";
-
-                    if (!string.IsNullOrEmpty(currentOrder.orderNo))
-                    {
-                        UpdateLabels();
-                        currentBins = new Dictionary<string, CurrentBinStruct>();
-                        dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)currentOrder.numberOfBins);
-                        LedReels.AddLedReelsForLot(currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToOracleSpec);
-                        buttonChangeQty.Visible = true;
-                        buttonChangePlannedDate.Visible = true;
-
-                        var prodWerehoueStock = MST.MES.SqlOperations.ConnectDB.CheckHowManyProductsOnProdWerehouse(currentOrder.modelId + "46");
-                        if (prodWerehoueStock.Count > 0)
-                        {
-                            foreach (var locationEntry in prodWerehoueStock)
-                            {
-                                lProdWerehouseStock.Text += $"{locationEntry.Key} - {locationEntry.Value} szt."+Environment.NewLine;
-                            }
-                        }
+                        SetUpComponentsForOrder();
                     }
                     textBoxLotNumber.Text = "";
                 }
@@ -130,7 +112,6 @@ namespace KITTING_MST
                     MessageBox.Show("Niepoprawny numer zlecenia.");
                 }
             }
-            
         }
 
         private void butAddLeds_click(object sender, EventArgs e)
@@ -143,9 +124,9 @@ namespace KITTING_MST
                     {
                         bool binAnd12NCCorrect = true;
 
-                        if (currentBins.ContainsKey(ledForm.binId))
+                        if (DataStorage.currentBins.ContainsKey(ledForm.binId))
                         {
-                            if (ledForm.nc12 != currentBins[ledForm.binId].nc12)
+                            if (ledForm.nc12 != DataStorage.currentBins[ledForm.binId].nc12)
                             {
                                 binAnd12NCCorrect = false;
                             }
@@ -155,15 +136,15 @@ namespace KITTING_MST
                         {
                             if (release)
                             {
-                                MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(ledForm.nc12, ledForm.id, currentOrder.orderNo, ledForm.binId);
+                                MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(ledForm.nc12, ledForm.id, DataStorage.currentOrder.orderNo, ledForm.binId);
                             }
 
-                            LedReels.AddReelToGrid(ledForm.nc12, ledForm.id, currentOrder.orderNo, dataGridViewLedReels, ref currentBins, nc12ToOracleSpec);
+                            LedReels.AddReelToGrid(ledForm.nc12, ledForm.id, DataStorage.currentOrder.orderNo, dataGridViewLedReels);
                         }
                         else
                         {
                             string correctBin = "";
-                            foreach (var binEntry in currentBins)
+                            foreach (var binEntry in DataStorage.currentBins)
                             {
                                 if (binEntry.Value.nc12 == ledForm.nc12)
                                 {
@@ -207,7 +188,7 @@ namespace KITTING_MST
             {
                 if (e.ColumnIndex == 4)
                 {
-                    dgvTools.ShowLedDetails(dataGridViewLedReels, e.RowIndex, ref currentBins, currentOrder, nc12ToOracleSpec);
+                    dgvTools.ShowLedDetails(dataGridViewLedReels, e.RowIndex);
                 }
             }
         }
@@ -216,13 +197,13 @@ namespace KITTING_MST
         {
             if (userList.Contains(currentUser))
             {
-                using (ChangeOrderQty changeQForm = new ChangeOrderQty((int)currentOrder.orderedQty, currentOrder.modelId, int.Parse(lpcbPerMb.Text)))
+                using (ChangeOrderQty changeQForm = new ChangeOrderQty((int)DataStorage.currentOrder.orderedQty, DataStorage.currentOrder.modelId, int.Parse(lpcbPerMb.Text)))
                 {
                     if (changeQForm.ShowDialog() == DialogResult.OK)
                     {
-                        currentOrder.orderedQty = changeQForm.newQty;
+                        DataStorage.currentOrder.orderedQty = changeQForm.newQty;
 
-                        MST.MES.SqlOperations.Kitting.UpdateOrderQty(currentOrder.orderNo, (int)currentOrder.orderedQty);
+                        MST.MES.SqlOperations.Kitting.UpdateOrderQty(DataStorage.currentOrder.orderNo, (int)DataStorage.currentOrder.orderedQty);
                         UpdateLabels();
                     }
                 }
@@ -242,14 +223,14 @@ namespace KITTING_MST
 
         private void butKartyTechn_click(object sender, EventArgs e)
         {
-            if (currentOrder.orderNo =="" )
+            if (DataStorage.currentOrder.orderNo =="" )
             {
                 MessageBox.Show("Wczytaj lub utwórz zlecenie");
                 return;
             }
 
             bool ledCheck = true;
-            var dtModels = devToolsDb.Where(nc => nc.nc12 == currentOrder.modelId + "00").ToList();
+            var dtModels = DataStorage.devToolsDb.Where(nc => nc.nc12 == DataStorage.currentOrder.modelId + "00").ToList();
             if (dtModels.Count() == 0) 
             {
                 MessageBox.Show("Brak danych w DevTools - wpisz ilości LED ręcznie");
@@ -257,7 +238,7 @@ namespace KITTING_MST
                 //........
             }
             
-            Dictionary<string, LedStructForTechnologicSpec> ledForTechCard = DataPreparation.LedForTechCard(devToolsDb, currentOrder, currentBins, nc12ToOracleSpec, ref ledCheck);
+            Dictionary<string, LedStructForTechnologicSpec> ledForTechCard = DataPreparation.LedForTechCard( ref ledCheck);
             bool nonStandardOrder = false; //false
             if (!ledCheck)
             {
@@ -274,12 +255,12 @@ namespace KITTING_MST
                 }
             }
 
-            var excPkg = ExcelOperations.GetExcelPackage(currentOrder.modelId);// currentOrder.modelId);
+            var excPkg = ExcelOperations.GetExcelPackage(DataStorage.currentOrder.modelId);// currentOrder.modelId);
             if (excPkg != null)
             {
                 string additionalComment = lProdWerehouseStock.Text != "..." ? $"Wyrób znajduje się na regale: {lProdWerehouseStock.Text}" : "";
                 
-                ExcelOperations.FillOutExcelData(currentOrder, ref excPkg, ledForTechCard, nonStandardOrder, additionalComment);
+                ExcelOperations.FillOutExcelData(DataStorage.currentOrder, ref excPkg, ledForTechCard, nonStandardOrder, additionalComment);
                 string tempFile = ExcelOperations.SaveExcelAndReturnPath(excPkg);
                 Process.Start(tempFile);
             }
@@ -287,12 +268,12 @@ namespace KITTING_MST
 
         private void bwDevTools_DoWork(object sender, DoWorkEventArgs e)
         {
-            devToolsDb = MST.MES.Data_structures.DevTools.DevToolsLoader.LoadDevToolsModels();
+            DataStorage.devToolsDb = MST.MES.Data_structures.DevTools.DevToolsLoader.LoadDevToolsModels();
         }
 
         private void bwDevTools_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (devToolsDb.Count > 0)
+            if (DataStorage.devToolsDb.Count > 0)
             {
                 buttonKartaTechnologiczna.Enabled = true;
                 buttonKartaTechnologiczna.Text = "Karta technologiczna";
@@ -305,14 +286,14 @@ namespace KITTING_MST
 
         private void button4_Click(object sender, EventArgs e)
         {
-            if (currentOrder.orderNo != "")
+            if (DataStorage.currentOrder.orderNo != "")
             {
-                using (ChangeDateForm chDate = new ChangeDateForm(currentOrder.orderNo, currentOrder.kittingDate))
+                using (ChangeDateForm chDate = new ChangeDateForm(DataStorage.currentOrder.orderNo, DataStorage.currentOrder.kittingDate))
                 {
                     if(chDate.ShowDialog() == DialogResult.OK)
                     {
-                        currentOrder.plannedEnd = chDate.selectedDate;
-                        labelOrderPlannedEnd.Text = currentOrder.plannedEnd.ToShortDateString();
+                        DataStorage.currentOrder.plannedEnd = chDate.selectedDate;
+                        labelOrderPlannedEnd.Text = DataStorage.currentOrder.plannedEnd.ToShortDateString();
                     }
                 }
             }

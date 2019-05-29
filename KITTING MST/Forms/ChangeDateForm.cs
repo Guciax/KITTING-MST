@@ -30,7 +30,7 @@ namespace KITTING_MST.Forms
 
         private void button1_Click(object sender, EventArgs e)
         {
-            selectedDate = monthCalendar1.SelectionStart.Date;
+            selectedDate = monthCalendar1.SelectionStart.Date.AddHours(12);
             MST.MES.SqlOperations.Kitting.UpdateOrderPlannedEndDate(currentOrderNumber, selectedDate);
             this.DialogResult = DialogResult.OK;
         }
