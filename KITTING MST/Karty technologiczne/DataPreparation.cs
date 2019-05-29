@@ -16,7 +16,7 @@ namespace KITTING_MST.Karty_technologiczne
             Dictionary<string, LedStructForTechnologicSpec> result = new Dictionary<string, LedStructForTechnologicSpec>();
             foreach (var binEntry in DataStorage.currentBins)
             {
-                var ledInfo = DataStorage.nc12ToOracleSpec[binEntry.Value.nc12];
+                var ledInfo = DataStorage.nc12ToOracleSpec[binEntry.Key];
                 var dtLedInfo = DataStorage.devToolsDb.Where(nc => nc.nc12 == ledInfo.collective);
 
                 if (!dtModel.qtyPerComponent.ContainsKey(ledInfo.collective))
@@ -31,7 +31,7 @@ namespace KITTING_MST.Karty_technologiczne
                     {
                         collective12NC = ledInfo.collective,
                         qtyPerModel = dtModel.qtyPerComponent[ledInfo.collective],
-                        name = binEntry.Value.name
+                        name = binEntry.Value.First().name
                     });
 
                     if (dtLedInfo.Count() > 0)

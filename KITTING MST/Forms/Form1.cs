@@ -77,10 +77,12 @@ namespace KITTING_MST
 
         private void SetUpComponentsForOrder()
         {
+            CurrentBinStruct.LoadBinReelsToCurrentBins();
             UpdateLabels();
-            DataStorage.currentBins = new Dictionary<string, CurrentBinStruct>();
-            dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)DataStorage.currentOrder.numberOfBins);
-            LedReels.AddLedReelsForLot(DataStorage.currentOrder.orderNo, dataGridViewLedReels);
+            //CurrentBinStruct.SetUpCurrentBinQtyForNewOrder();
+            dgvTools.PrepareDgvForBins(dataGridViewLedReels);
+
+            LedReels.AddLedReelsForLot(dataGridViewLedReels);
             buttonChangeQty.Visible = true;
             buttonChangePlannedDate.Visible = true;
 
@@ -118,40 +120,28 @@ namespace KITTING_MST
         {
             if (labelLotNumber.Text.Length > 6)
             {
-                using (AddLedReel ledForm = new AddLedReel(int.Parse(labelBinQty.Text)))
+                using (AddLedReel ledForm = new AddLedReel())
                 {
                     if (ledForm.ShowDialog() == DialogResult.OK)
                     {
                         bool binAnd12NCCorrect = true;
 
-                        if (DataStorage.currentBins.ContainsKey(ledForm.binId))
+                        if (!DataStorage.currentBins.ContainsKey(ledForm.nc12) || !DataStorage.currentBins.Select(b=>b.Key).First().StartsWith("bin"))
                         {
-                            if (ledForm.nc12 != DataStorage.currentBins[ledForm.binId].nc12)
-                            {
-                                binAnd12NCCorrect = false;
-                            }
+                            MessageBox.Show("Dla tego zlecenia zeskanowany numer 12NC diody jest niedozwolony." + Environment.NewLine
+                                            + "Dozwolone 12NC to:" + Environment.NewLine
+                                            + string.Join(Environment.NewLine, DataStorage.currentBins.Select(b => b.Key)));
+                            binAnd12NCCorrect = false;
                         }
 
                         if (binAnd12NCCorrect)
                         {
                             if (release)
                             {
-                                MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(ledForm.nc12, ledForm.id, DataStorage.currentOrder.orderNo, ledForm.binId);
+                                MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(ledForm.nc12, ledForm.id, DataStorage.currentOrder.orderNo, ledForm.id);
                             }
 
-                            LedReels.AddReelToGrid(ledForm.nc12, ledForm.id, DataStorage.currentOrder.orderNo, dataGridViewLedReels);
-                        }
-                        else
-                        {
-                            string correctBin = "";
-                            foreach (var binEntry in DataStorage.currentBins)
-                            {
-                                if (binEntry.Value.nc12 == ledForm.nc12)
-                                {
-                                    correctBin = binEntry.Key;
-                                }
-                            }
-                            MessageBox.Show("Ten numer 12NC diody został przypisany do BINu " + correctBin);
+                            SetUpComponentsForOrder();
                         }
                     }
                 }
@@ -188,7 +178,16 @@ namespace KITTING_MST
             {
                 if (e.ColumnIndex == 4)
                 {
-                    dgvTools.ShowLedDetails(dataGridViewLedReels, e.RowIndex);
+                    string nc12 = dataGridViewLedReels.Rows[e.RowIndex].Cells["NC12"].Value.ToString();
+                    string id = dataGridViewLedReels.Rows[e.RowIndex].Cells["ID"].Value.ToString();
+                    using (EditLedReel editForm = new EditLedReel(nc12, id))
+                    {
+                        if (editForm.ShowDialog() == DialogResult.OK)
+                        {
+                            MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(nc12, id, editForm.newOrder, editForm.newBin);
+                            SetUpComponentsForOrder();
+                        }
+                    }
                 }
             }
         }

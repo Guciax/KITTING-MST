@@ -17,12 +17,12 @@ namespace KITTING_MST.Forms
         public string newOrder = "";
         public string newBin = "";
 
-        public EditLedReel(string currentOrder, string currentBin, int binQty)
+        public EditLedReel(string nc12, string id)
         {
             InitializeComponent();
-            this.currentOrder = currentOrder;
-            this.currentBin = currentBin;
-            this.binQty = binQty;
+            this.currentOrder = DataStorage.currentOrder.orderNo;
+            this.currentBin = DataStorage.currentBins[nc12].First().BinLetter;
+            this.binQty = DataStorage.currentBins[nc12].First().currentQty;
         }
 
         private void EditLedReel_Load(object sender, EventArgs e)

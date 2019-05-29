@@ -12,26 +12,18 @@ namespace KITTING_MST
     class dgvTools
     {
 
-        public static void PrepareDgvForBins(DataGridView grid, int binQty)
+        public static void PrepareDgvForBins(DataGridView grid)
         {
+            int binQty = (int)DataStorage.currentOrder.numberOfBins;
             grid.Rows.Clear();
             Char binId = 'A';
-            for (int b = 0; b < binQty; b++)
+            foreach (var bin12NcEntry in DataStorage.currentBins)
             {
-                grid.Rows.Add(binId.ToString(),"BIN " + binId.ToString());
+                string bin12Nc = bin12NcEntry.Key.Length == 12 ? bin12NcEntry.Key : binId.ToString();
+                grid.Rows.Add(bin12Nc, "BIN " + binId.ToString());
                 foreach (DataGridViewCell cell in grid.Rows[grid.Rows.Count - 1].Cells)
                 {
-                    if (cell.Value != null)
-                    {
-                        if (cell.Value.ToString() == binId.ToString())
-                        {
-                            cell.Style.ForeColor = Color.DimGray;
-                        }
-                        else
-                        {
-                            cell.Style.ForeColor = Color.White;
-                        }
-                    }
+                    cell.Style.ForeColor = Color.White;
                     cell.Style.BackColor = Color.DimGray;
                 }
                 binId++;
@@ -40,30 +32,7 @@ namespace KITTING_MST
             if (grid.Rows.Count > 0) grid.Rows.RemoveAt(grid.Rows.Count - 1);
         }
 
-        public static void SumUpLedsInBins(DataGridView grid)
-        {
-            int lastBin = 0;
-            double binSum = 0;
-            for (int r = 0; r < grid.Rows.Count; r++) 
-            {
-                if (grid.Rows[r].Cells[0].Value == null) continue;
-                if (grid.Rows[r].Cells[0].Value.ToString().Length == 1) 
-                {
-                    grid.Rows[lastBin].Cells[2].Value = binSum;
-                    binSum = 0;
-                    lastBin = r;
-                    continue;
-                }
 
-                if (grid.Rows[r].Cells[2].Value == null) continue;
-                binSum += double.Parse(grid.Rows[r].Cells[2].Value.ToString());
-
-                if (r == grid.Rows.Count - 1)
-                {
-                    grid.Rows[lastBin].Cells[2].Value = binSum;
-                }
-            }
-        }
 
         public static void ShowLedDetails(DataGridView dataGridViewLedReels, int rowIndex)
         {
@@ -82,17 +51,7 @@ namespace KITTING_MST
                 string nc12 = dataGridViewLedReels.Rows[rowIndex].Cells[0].Value.ToString();
                 string id = dataGridViewLedReels.Rows[rowIndex].Cells[1].Value.ToString();
 
-                using (EditLedReel editForm = new EditLedReel(DataStorage.currentOrder.orderNo, bin, (int)DataStorage.currentOrder.numberOfBins))
-                {
-                    if (editForm.ShowDialog() == DialogResult.OK)
-                    {
-                        MST.MES.SqlOperations.SparingLedInfo.UpdateLedZlecenieStringBinId(nc12, id, editForm.newOrder, editForm.newBin);
-
-                        DataStorage.currentBins = new Dictionary<string, CurrentBinStruct>();
-                        dgvTools.PrepareDgvForBins(dataGridViewLedReels, (int)DataStorage.currentOrder.numberOfBins);
-                        LedReels.AddLedReelsForLot(DataStorage.currentOrder.orderNo, dataGridViewLedReels);
-                    }
-                }
+                
             }
         }
     }

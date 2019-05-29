@@ -42,7 +42,6 @@
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(353, 31);
             this.textBox1.TabIndex = 0;
-            this.textBox1.Visible = false;
             this.textBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox1_KeyDown);
             this.textBox1.Leave += new System.EventHandler(this.textBox1_Leave);
             // 
@@ -50,11 +49,11 @@
             // 
             this.labelInfo.AutoSize = true;
             this.labelInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.labelInfo.Location = new System.Drawing.Point(12, 9);
+            this.labelInfo.Location = new System.Drawing.Point(68, 9);
             this.labelInfo.Name = "labelInfo";
-            this.labelInfo.Size = new System.Drawing.Size(96, 20);
+            this.labelInfo.Size = new System.Drawing.Size(184, 20);
             this.labelInfo.TabIndex = 1;
-            this.labelInfo.Text = "Wybierz BIN";
+            this.labelInfo.Text = "Skanuj kod QR rolki LED";
             // 
             // comboBox1
             // 
@@ -64,6 +63,7 @@
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(50, 28);
             this.comboBox1.TabIndex = 2;
+            this.comboBox1.Visible = false;
             this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
             // AddLedReel

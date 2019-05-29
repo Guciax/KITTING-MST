@@ -10,85 +10,35 @@ namespace KITTING_MST
 {
     class LedReels
     {
-        public static void AddLedReelsForLot(string lot, DataGridView grid)
+        public static void AddLedReelsForLot(DataGridView grid)
         {
-            DataTable sqlTable = MST.MES.SqlOperations.SparingLedInfo.GetReelsForLot(lot);
-            List<string> checkList = new List<string>();
-
-            if (sqlTable.Rows.Count > 0)
+            foreach (var bin12NcEntry in DataStorage.currentBins)
             {
-                foreach (DataRow row in sqlTable.Rows)
-                {
-                    string nc12 = row["NC12"].ToString();
-                    string id = row["ID"].ToString();
-                    if (checkList.Contains(nc12 + id)) continue;
-
-                    var reelTable = MST.MES.SqlOperations.SparingLedInfo.GetInfoFor12NC_ID(nc12, id);
-                    string aktZlecenie = reelTable.Rows[0]["ZlecenieString"].ToString();
-
-                    string qty = row["Ilosc"].ToString();
-                    string bin = row["Tara"].ToString();
-
-                    if (!DataStorage.currentBins.ContainsKey(bin))
-                    {
-                        var ledName = LedNaming.GetLedName(DataStorage.nc12ToOracleSpec[nc12].name);
-                        string cct = "";
-                        foreach (var part in ledName.Split(' '))
-                        {
-                            if (part[part.Length - 1] == 'K') cct = part;
-                        }
-                        CurrentBinStruct binNfo = new CurrentBinStruct
-                        {
-                             cct = cct,
-                             name = ledName,
-                             nc12 = nc12
-                        };
-                        DataStorage.currentBins.Add(bin, binNfo);
-                    }
-
-                    AddReelToGrid(nc12, id, aktZlecenie, grid);
-                    checkList.Add(nc12 + id);
-                }
+                AddReelToGrid(bin12NcEntry.Key, bin12NcEntry.Value, grid);
             }
         }
 
-        public static void AddReelToGrid(string nc12, string id, string aktZlecenie, DataGridView grid)
+        public static void AddReelToGrid(string nc12, List<CurrentBinStruct> bins, DataGridView grid)
         {
-            DataTable reelTable = MST.MES.SqlOperations.SparingLedInfo.GetInfoFor12NC_ID(nc12, id);
-            string qty = reelTable.Rows[0]["Ilosc"].ToString();
-            string binId = reelTable.Rows[0]["Tara"].ToString();
-            if (!DataStorage.currentBins.ContainsKey(binId))
+            int bin12NcIndex = 0;
+            var sumOfBins = bins.Select(b => b.currentQty).Sum();
+            foreach (DataGridViewRow row in grid.Rows)
             {
-                var ledName = LedNaming.GetLedName(DataStorage.nc12ToOracleSpec[nc12].name);
-                string cct = "";
-                foreach (var part in ledName.Split(' '))
+                if (row.Cells[0].Value != null)
                 {
-                    if (part[part.Length - 1] == 'K') cct = part;
-                }
-                CurrentBinStruct binNfo = new CurrentBinStruct
-                {
-                    cct = cct,
-                    name = ledName,
-                    nc12 = nc12
-                };
-                DataStorage.currentBins.Add(binId, binNfo);
-            }
-
-
-            int binRow = 0;
-            for (int r = 0; r < grid.Rows.Count; r++)
-            {
-                if (grid.Rows[r].Cells[0].Value == null) continue;
-                if (grid.Rows[r].Cells[0].Value.ToString() == binId)
-                {
-                    binRow = r;
-                    break;
+                    if(row.Cells[0].Value.ToString() == nc12)
+                    {
+                        bin12NcIndex = row.Index;
+                        row.Cells[2].Value = sumOfBins;
+                        break;
+                    }
                 }
             }
 
-            grid.Rows.Insert(binRow + 1, nc12, id, qty, aktZlecenie);
-            
-            dgvTools.SumUpLedsInBins(grid);
+            foreach (var bin in bins)
+            {
+                grid.Rows.Insert(bin12NcIndex + 1, nc12, bin.id, bin.currentQty, bin.currentOrderNo);
+            }
 
             foreach (DataGridViewColumn col in grid.Columns)
             {
